@@ -1,7 +1,7 @@
 // mdexceptions.h
 //
 // WinDirStat - Directory Statistics
-// Copyright (C) 2003-2005 Bernhard Seifert
+// Copyright (C) 2003-2004 Bernhard Seifert
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -21,11 +21,12 @@
 // created by www.daccord.net und published
 // here under GPL with friendly permission of D'accord.
 //
-// $Header$
+// Last modified: $Date$
 
-// Note: Md is just a prefix.
+// Md is just a prefix.
 
-#pragma once
+#ifndef MDEXCEPTIONS_H_INCLUDED
+#define MDEXCEPTIONS_H_INCLUDED
 
 #ifndef _INC_STDARG
 #include <stdarg.h>
@@ -37,84 +38,68 @@ class CMdStringException: public CException
 {
 public:
 	CMdStringException(LPCTSTR pszText)
-		: m_sText(pszText) // pszText may be an ordinal resource (MAKEINTRESOURCE)
+		: m_sText(pszText) // pszText may be a MAKEINTRESOURCE
+	{}
+	virtual BOOL GetErrorMessage(LPTSTR lpszError, UINT nMaxError, PUINT pnHelpContext = NULL)
 	{
-	}
-
-	virtual BOOL GetErrorMessage(LPTSTR lpszError, UINT nMaxError, UINT *pnHelpContext = NULL)
-	{
-		if(pnHelpContext != NULL)
-		{
-			*pnHelpContext = 0;
-		}
-		if((nMaxError != 0) && (lpszError != NULL))
-		{// TODO, fix parameters
-			_tcscpy_s(lpszError, nMaxError, m_sText);
-		}
+		if (pnHelpContext != NULL)
+			*pnHelpContext= 0;
+		if (nMaxError != 0 && lpszError != NULL)
+			lstrcpyn(lpszError, m_sText, nMaxError);
 		return true;
 	}
-
 protected:
 	CString m_sText;
 };
 
 inline CString MdGetExceptionMessage(CException *pe)
 {
-	const INT ccBufferSize = 0x400;
 	CString s;
-	BOOL b = pe->GetErrorMessage(s.GetBuffer(ccBufferSize), ccBufferSize);
+	BOOL b= pe->GetErrorMessage(s.GetBuffer(1024), 1024);
 	s.ReleaseBuffer();
 
-	if(!b)
-	{
-		s = TEXT("(no error message available)");
-	}
+	if (!b)
+		s= _T("(no error message available)");
 
 	return s;
 }
 
-inline CString MdGetWinErrorText(HRESULT hr)
+inline CString MdGetWinerrorText(HRESULT hr)
 {
 	CString sRet;	
 	LPVOID lpMsgBuf;
-	DWORD dw = FormatMessage(
+	DWORD dw= FormatMessage(
 		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, 
-		NULL,
-		hr,
-		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-		(LPTSTR)&lpMsgBuf,
-		0,
-		NULL
-		);
-	if(NULL == dw)
+		NULL, hr, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), 
+		(LPTSTR) &lpMsgBuf, 0, NULL
+	);
+	if (dw == NULL)
 	{
 		CString s(MAKEINTRESOURCE(AFX_IDP_NO_ERROR_AVAILABLE));
-		sRet.Format(TEXT("%s (0x%08lx)"), s, hr);
+		sRet.Format(_T("%s (0x%08lx)"), s, hr);
 	}
 	else 
 	{ 
-		sRet = (LPCTSTR)lpMsgBuf; 
+		sRet= (LPCTSTR)lpMsgBuf; 
 		LocalFree(lpMsgBuf); 
 	}
 	return sRet;
 }
 
-inline void MdThrowStringException(UINT resId)
-	throw (CMdStringException *)
+inline void MdThrowStringException(UINT resId) throw (CMdStringException *)
 {
 	throw new CMdStringException(MAKEINTRESOURCE(resId));
 }
 
-inline void MdThrowStringException(LPCTSTR pszText)
-	throw (CMdStringException *)
+inline void MdThrowStringException(LPCTSTR pszText) throw (CMdStringException *)
 {
 	throw new CMdStringException(pszText);
 }
 
 inline void __MdFormatStringExceptionV(CString& rsText, LPCTSTR pszFormat, va_list vlist)
 {
-//	CString sFormat(); // may be a MAKEINTRESOURCE
-	rsText.FormatMessageV(CString(pszFormat), &vlist);
+	CString sFormat(pszFormat); // may be a MAKEINTRESOURCE
+	rsText.FormatMessageV(sFormat, &vlist);
 }
 
 inline void AFX_CDECL MdThrowStringExceptionF(LPCTSTR pszFormat, ...)
@@ -155,45 +140,35 @@ inline void MdThrowStringExceptionF(UINT nResIdFormat, va_list vlist)
 	MdThrowStringException(sText);
 }
 
-inline void MdThrowWinError(DWORD dw, LPCTSTR pszPrefix =NULL)
-	throw (CMdStringException *)
+inline void MdThrowWinerror(DWORD dw, LPCTSTR pszPrefix =NULL) throw (CMdStringException *)
 {
-	CString sMsg = pszPrefix;
-	sMsg += TEXT(": ") + MdGetWinErrorText(dw);
+	CString sMsg= pszPrefix;
+	sMsg+= _T(": ") + MdGetWinerrorText(dw);
 	MdThrowStringException(sMsg);
 }
 
-inline void MdThrowHresult(HRESULT hr, LPCTSTR pszPrefix =NULL)
-	throw (CMdStringException *)
+inline void MdThrowHresult(HRESULT hr, LPCTSTR pszPrefix =NULL) throw (CMdStringException *)
 {
-	CString sMsg = pszPrefix;
-	sMsg += TEXT(": ") + MdGetWinErrorText(hr);
+	CString sMsg= pszPrefix;
+	sMsg+= _T(": ") + MdGetWinerrorText(hr);
 	MdThrowStringException(sMsg);
 }
 
 
-inline void MdThrowLastWinerror(LPCTSTR pszPrefix = NULL)
-	throw (CMdStringException *)
+inline void MdThrowLastWinerror(LPCTSTR pszPrefix =NULL) throw (CMdStringException *)
 {
-	MdThrowWinError(GetLastError(), pszPrefix);
+	MdThrowWinerror(GetLastError(), pszPrefix);
 }
 
-inline void MdThrowFailed(HRESULT hr, LPCTSTR pszPrefix = NULL)
-	throw (CMdStringException *)
+inline void MdThrowFailed(HRESULT hr, LPCTSTR pszPrefix =NULL) throw (CMdStringException *)
 {
-	if(FAILED(hr))
-	{
+	if (FAILED(hr))
 		MdThrowHresult(hr, pszPrefix);
-	}
 }
+
+#endif
 
 // $Log$
-// Revision 1.5  2006/07/04 22:49:18  assarbad
-// - Replaced CVS keyword "Date" by "Header" in the file headers
-//
-// Revision 1.4  2006/07/04 20:45:16  assarbad
-// - See changelog for the changes of todays previous check-ins as well as this one!
-//
 // Revision 1.3  2004/11/05 16:53:05  assarbad
 // Added Date and History tag where appropriate.
 //

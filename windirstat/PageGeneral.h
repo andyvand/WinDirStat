@@ -1,8 +1,7 @@
-// pagegeneral.h - Declaration of CPageGeneral
+// pagegeneral.h	- Declaration of CPageGeneral
 //
 // WinDirStat - Directory Statistics
-// Copyright (C) 2003-2005 Bernhard Seifert
-// Copyright (C) 2004-2006 Oliver Schneider (assarbad.net)
+// Copyright (C) 2003-2004 Bernhard Seifert
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,10 +17,9 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
-// Author(s): - bseifert -> bseifert@users.sourceforge.net, bseifert@daccord.net
-//            - assarbad -> http://assarbad.net/en/contact
+// Author: bseifert@users.sourceforge.net, bseifert@daccord.net
 //
-// $Header$
+// Last modified: $Date$
 
 #pragma once
 
@@ -72,17 +70,6 @@ protected:
 };
 
 // $Log$
-// Revision 1.12  2006/07/04 23:37:39  assarbad
-// - Added my email address in the header, adjusted "Author" -> "Author(s)"
-// - Added CVS Log keyword to those files not having it
-// - Added the files which I forgot during last commit
-//
-// Revision 1.11  2006/07/04 22:49:20  assarbad
-// - Replaced CVS keyword "Date" by "Header" in the file headers
-//
-// Revision 1.10  2006/07/04 20:45:22  assarbad
-// - See changelog for the changes of todays previous check-ins as well as this one!
-//
 // Revision 1.9  2004/11/14 08:49:06  bseifert
 // Date/Time/Number formatting now uses User-Locale. New option to force old behavior.
 //

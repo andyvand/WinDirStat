@@ -1,8 +1,7 @@
 // version.h - Version number. Used by all resource scripts and by aboutdlg.cpp.
 //
 // WinDirStat - Directory Statistics
-// Copyright (C) 2003-2005 Bernhard Seifert
-// Copyright (C) 2004-2006 Oliver Schneider (assarbad.net)
+// Copyright (C) 2003-2004 Bernhard Seifert
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,10 +17,9 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
-// Author(s): - bseifert -> bseifert@users.sourceforge.net, bseifert@daccord.net
-//            - assarbad -> http://assarbad.net/en/contact
+// Author: bseifert@users.sourceforge.net, bseifert@daccord.net
 //
-// $Header$
+// Last modified: $Date$
 
 /*-------------------------------------------------------------------
   This file defines the following:
@@ -45,9 +43,9 @@
 // Build categories. Uncomment _one_ line.
 //
 
-#define BC_DEVEL					// Development version. The usual setting. File version is 0.0.0.buildno.
+#define BC_DEVEL			// Development version. The usual setting. File version is 0.0.0.buildno.
 //#define BC_RELEASECANDIDATE		// Release candidate. Version number is relevant but not yet official. About-box shows x.y.zrcn. File version is x.y.z.buildno.
-//#define BC_RELEASE				// Set this only during official builds. About-box shows x.y.z. File version is x.y.z.buildno
+//#define BC_RELEASE			// Set this only during official builds. About-box shows x.y.z. File version is x.y.z.buildno
 
 // A release version must not contain debug information. Raise an error!
 #if defined(_DEBUG) && defined(BC_RELEASE)
@@ -56,19 +54,19 @@
 
 // This will not change to often, but the years need to be modified
 // regularly, so it can be in one central place
-#define VN_COPYRIGHTSTRING "Copyright (C) 2003-2005 Bernhard Seifert, (C) 2004-2006 Oliver Schneider"
+#define VN_COPYRIGHTSTRING "Copyright (C) 2003-2005 Bernhard Seifert"
 
 //-------------------------------------------------------------------
 // Version number. Relevant for BC_RELEASECANDIDATE and BC_RELEASE.
 //
 #define VERNUM_MAJOR		1
-#define VERNUM_MINOR		2
-#define VERNUM_REVISION		0
+#define VERNUM_MINOR		1
+#define VERNUM_REVISION		1
 // The following line is automatically incremented by linkcounter.exe.
 // Format: #define blank LINKCOUNT blanks decimal
 // Reset this to zero only when you increment VERNUM_MAJOR/MINOR/REVISION.
 
-#include "../common/buildnumber.h"
+#define LINKCOUNT  72
 
 //-------------------------------------------------------------------
 // Release candidate number. Relevant for BC_RELEASECANDIDATE.
@@ -122,7 +120,7 @@
 	#define VN_MINOR	VERNUM_MINOR
 	#define VN_REVISION	VERNUM_REVISION
 	#define VN_FILEFLAG	VS_FF_PRERELEASE
-	// The variant (debug or not/ Unicode or not) is not relevant for resource DLLs, but for EXEs
+	// The variant (debug or not/ unicode or not) is not relevant for resource DLLs, but for EXEs
 	#define VN_STRING_EXE	VN_STRING_DLL "rc" PPS(VERNUM_CANDIDATE) VERVARIANT
 
 #elif defined(BC_RELEASE)
@@ -131,7 +129,7 @@
 	#define VN_MINOR	VERNUM_MINOR
 	#define VN_REVISION	VERNUM_REVISION
 	#define VN_FILEFLAG	0
-	// The variant (debug or not/ Unicode or not) is not relevant for resource DLLs, but for EXEs
+	// The variant (debug or not/ unicode or not) is not relevant for resource DLLs, but for EXEs
 	#define VN_STRING_EXE	VN_STRING_DLL VERVARIANT
 
 #endif
@@ -150,14 +148,6 @@
  #define VN_FILEFLAG_EXE VN_FILEFLAG
 #endif
 
-#ifdef BC_DEVEL
-#define IDSS_CHECKUPDATESRV      "localhost"
-#else
-#define IDSS_CHECKUPDATESRV      "windirstat.sourceforge.net"
-#endif
-#define IDSS_CHECKUPDATEURI      "checkupdate.php"
-#define IDXS_CHECKUPDATEPORT     80
-
 // ...nothing else.
 #undef BC_DEVEL
 #undef BC_RELEASECANDIDATE
@@ -165,32 +155,6 @@
 
 
 // $Log$
-// Revision 1.44  2006/07/04 23:37:39  assarbad
-// - Added my email address in the header, adjusted "Author" -> "Author(s)"
-// - Added CVS Log keyword to those files not having it
-// - Added the files which I forgot during last commit
-//
-// Revision 1.43  2006/07/04 22:49:19  assarbad
-// - Replaced CVS keyword "Date" by "Header" in the file headers
-//
-// Revision 1.42  2006/07/04 20:45:16  assarbad
-// - See changelog for the changes of todays previous check-ins as well as this one!
-//
-// Revision 1.41  2005/11/08 20:10:55  assarbad
-// - Fixed minor bug. See changelog.txt for details. Sent for review to the reporter of the bug.
-//
-// Revision 1.40  2005/10/11 10:02:16  assarbad
-// - Added Dutch
-//
-// Revision 1.39  2005/10/01 11:21:07  assarbad
-// *** empty log message ***
-//
-// Revision 1.38  2005/07/16 13:58:05  assarbad
-// *** empty log message ***
-//
-// Revision 1.37  2005/07/16 13:38:44  assarbad
-// - Preparation for release 1.1.2
-//
 // Revision 1.36  2005/04/17 20:45:15  assarbad
 // - Now the list of translators is shared among all translations. See changelog for details.
 //

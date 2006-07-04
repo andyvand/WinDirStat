@@ -1,8 +1,7 @@
-// osspecific.cpp - Implementation of the platform-specific classes
+// osspecific.cpp	- Implementation of the platform-specific classes
 //
 // WinDirStat - Directory Statistics
-// Copyright (C) 2003-2005 Bernhard Seifert
-// Copyright (C) 2004-2006 Oliver Schneider (assarbad.net)
+// Copyright (C) 2003-2004 Bernhard Seifert
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,10 +17,9 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
-// Author(s): - bseifert -> bseifert@users.sourceforge.net, bseifert@daccord.net
-//            - assarbad -> http://assarbad.net/en/contact
+// Author: bseifert@users.sourceforge.net, bseifert@daccord.net
 //
-// $Header$
+// Last modified: $Date$
 
 #include "stdafx.h"
 #include "osspecific.h"
@@ -36,31 +34,38 @@
 #define TSPEC "A"
 #endif
 
-#define PROCNAME(name) #name
-#define TPROCNAME(name) #name TSPEC
+#define GETPROC(name) m_##name = ( m_dll != 0 ? (Type##name)GetProcAddress(m_dll, #name) : NULL )
+#define TGETPROC(name) m_##name = ( m_dll != 0 ? (Type##name)GetProcAddress(m_dll, #name TSPEC) : NULL )
 
-#define CHECK(name) if(!m_##name.IsSupported()) return false
-
-static CDllModule dllKernel32(nameKernel32);
-static CDllModule dllShell32(nameShell32);
-static CDllModule dllPsApi(namePsApi);
+#define CHECK(name) if (m_##name == 0) return false
 
 /////////////////////////////////////////////////////////////////////////////
 
 CVolumeApi::CVolumeApi()
-	: m_hDll(dllKernel32.Handle())
-	, m_GetVolumeNameForVolumeMountPoint(m_hDll, TPROCNAME(GetVolumeNameForVolumeMountPoint))
-	, m_FindFirstVolume(m_hDll, TPROCNAME(FindFirstVolume))
-	, m_FindNextVolume(m_hDll, TPROCNAME(FindNextVolume))
-	, m_FindVolumeClose(m_hDll, PROCNAME(FindVolumeClose))
-	, m_FindFirstVolumeMountPoint(m_hDll, TPROCNAME(FindFirstVolumeMountPoint))
-	, m_FindNextVolumeMountPoint(m_hDll, TPROCNAME(FindNextVolumeMountPoint))
-	, m_FindVolumeMountPointClose(m_hDll, PROCNAME(FindVolumeMountPointClose))
+	: m_UnloadDll(false)
 {
+	m_dll = GetModuleHandle(_T("kernel32.dll"));
+	if(!m_dll)
+	{
+		m_dll = LoadLibrary(_T("kernel32.dll"));
+		m_UnloadDll = (m_dll != NULL);
+	}
+
+	TGETPROC(GetVolumeNameForVolumeMountPoint);
+	TGETPROC(FindFirstVolume);
+	TGETPROC(FindNextVolume);
+	GETPROC(FindVolumeClose);
+	TGETPROC(FindFirstVolumeMountPoint);
+	TGETPROC(FindNextVolumeMountPoint);
+	GETPROC(FindVolumeMountPointClose);
 }
 
 CVolumeApi::~CVolumeApi()
 {
+	if (m_UnloadDll)
+		FreeLibrary(m_dll);
+	// "It is not safe to call FreeLibrary from DllMain."
+	// Therefore, don't use global variables of type CVolumeApi in a DLL.
 }
 
 bool CVolumeApi::IsSupported()
@@ -79,58 +84,69 @@ bool CVolumeApi::IsSupported()
 
 BOOL CVolumeApi::GetVolumeNameForVolumeMountPoint(LPCTSTR lpszVolumeMountPoint, LPTSTR lpszVolumeName, DWORD cchBufferLength)
 {
-	ASSERT(m_GetVolumeNameForVolumeMountPoint.IsSupported());
-	return m_GetVolumeNameForVolumeMountPoint.pfnFct(lpszVolumeMountPoint, lpszVolumeName, cchBufferLength);
+	ASSERT(IsSupported());
+	return (*m_GetVolumeNameForVolumeMountPoint)(lpszVolumeMountPoint, lpszVolumeName, cchBufferLength);
 }
 
 HANDLE CVolumeApi::FindFirstVolume(LPTSTR lpszVolumeName, DWORD cchBufferLength)
 {
-	ASSERT(m_FindFirstVolume.IsSupported());
-	return m_FindFirstVolume.pfnFct(lpszVolumeName, cchBufferLength);
+	ASSERT(IsSupported());
+	return (*m_FindFirstVolume)(lpszVolumeName, cchBufferLength);
 }
 
 BOOL CVolumeApi::FindNextVolume(HANDLE hFindVolume, LPTSTR lpszVolumeName, DWORD cchBufferLength)
 {
-	ASSERT(m_FindNextVolume.IsSupported());
-	return m_FindNextVolume.pfnFct(hFindVolume, lpszVolumeName, cchBufferLength);
+	ASSERT(IsSupported());
+	return (*m_FindNextVolume)(hFindVolume, lpszVolumeName, cchBufferLength);
 }
 
 BOOL CVolumeApi::FindVolumeClose(HANDLE hFindVolume)
 {
-	ASSERT(m_FindVolumeClose.IsSupported());
-	return m_FindVolumeClose.pfnFct(hFindVolume);
+	ASSERT(IsSupported());
+	return (*m_FindVolumeClose)(hFindVolume);
 }
 
 
 HANDLE CVolumeApi::FindFirstVolumeMountPoint(LPCTSTR lpszRootPathName, LPTSTR lpszVolumeMountPoint, DWORD cchBufferLength)
 {
-	ASSERT(m_FindFirstVolumeMountPoint.IsSupported());
-	return m_FindFirstVolumeMountPoint.pfnFct(lpszRootPathName, lpszVolumeMountPoint, cchBufferLength);
+	ASSERT(IsSupported());
+	return (*m_FindFirstVolumeMountPoint)(lpszRootPathName, lpszVolumeMountPoint, cchBufferLength);
 }
 
 BOOL CVolumeApi::FindNextVolumeMountPoint(HANDLE hFindVolumeMountPoint, LPTSTR lpszVolumeMountPoint, DWORD cchBufferLength)
 {
-	ASSERT(m_FindNextVolumeMountPoint.IsSupported());
-	return m_FindNextVolumeMountPoint.pfnFct(hFindVolumeMountPoint, lpszVolumeMountPoint, cchBufferLength);
+	ASSERT(IsSupported());
+	return (*m_FindNextVolumeMountPoint)(hFindVolumeMountPoint, lpszVolumeMountPoint, cchBufferLength);
 }
 
 BOOL CVolumeApi::FindVolumeMountPointClose(HANDLE hFindVolumeMountPoint)
 {
-	ASSERT(m_FindVolumeMountPointClose.IsSupported());
-	return m_FindVolumeMountPointClose.pfnFct(hFindVolumeMountPoint);
+	ASSERT(IsSupported());
+	return (*m_FindVolumeMountPointClose)(hFindVolumeMountPoint);
 }
+
+
 
 /////////////////////////////////////////////////////////////////////////////
 
 CRecycleBinApi::CRecycleBinApi()
-	: m_hDll(dllShell32.Handle())
-	, m_SHEmptyRecycleBin(m_hDll, TPROCNAME(SHEmptyRecycleBin))
-	, m_SHQueryRecycleBin(m_hDll, TPROCNAME(SHQueryRecycleBin))
+	: m_UnloadDll(false)
 {
+	m_dll = GetModuleHandle(_T("shell32.dll"));
+	if(!m_dll)
+	{
+		m_dll = LoadLibrary(_T("shell32.dll"));
+		m_UnloadDll = (m_dll != NULL);
+	}
+
+	TGETPROC(SHEmptyRecycleBin);
+	TGETPROC(SHQueryRecycleBin);
 }
 
 CRecycleBinApi::~CRecycleBinApi()
 {
+	if (m_UnloadDll)
+		FreeLibrary(m_dll);
 }
 
 bool CRecycleBinApi::IsSupported()
@@ -143,63 +159,61 @@ bool CRecycleBinApi::IsSupported()
 
 HRESULT CRecycleBinApi::SHEmptyRecycleBin(HWND hwnd, LPCTSTR pszRootPath, DWORD dwFlags)
 {
-	ASSERT(m_SHEmptyRecycleBin.IsSupported());
-	return m_SHEmptyRecycleBin.pfnFct(hwnd, pszRootPath, dwFlags);
+	ASSERT(IsSupported());
+	return (*m_SHEmptyRecycleBin)(hwnd, pszRootPath, dwFlags);
 }
 
 HRESULT CRecycleBinApi::SHQueryRecycleBin(LPCTSTR pszRootPath, LPSHQUERYRBINFO pSHQueryRBInfo)
 {
-	ASSERT(m_SHQueryRecycleBin.IsSupported());
-	return m_SHQueryRecycleBin.pfnFct(pszRootPath, pSHQueryRBInfo);
+	ASSERT(IsSupported());
+	return (*m_SHQueryRecycleBin)(pszRootPath, pSHQueryRBInfo);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
 CPsapi::CPsapi()
-	: m_hDll(dllPsApi.Handle())
-	, m_GetProcessMemoryInfo(m_hDll, PROCNAME(GetProcessMemoryInfo))
 {
+	m_dll= LoadLibrary(_T("psapi.dll"));
+
+	GETPROC(GetProcessMemoryInfo);
 }
 
 CPsapi::~CPsapi()
 {
+	if (m_dll != NULL)
+		FreeLibrary(m_dll);
 }
 
 bool CPsapi::IsSupported()
 {
 	CHECK(GetProcessMemoryInfo);
-
 	return true;
 }
 
 BOOL CPsapi::GetProcessMemoryInfo(HANDLE Process, PPROCESS_MEMORY_COUNTERS ppsmemCounters, DWORD cb)
 {
-	ASSERT(m_GetProcessMemoryInfo.IsSupported());
-	return m_GetProcessMemoryInfo.pfnFct(Process, ppsmemCounters, cb);
+	ASSERT(IsSupported());
+	return (*m_GetProcessMemoryInfo)(Process, ppsmemCounters, cb);
 }
 
 
 /////////////////////////////////////////////////////////////////////////////
 
-/*
 CMapi32Api::CMapi32Api()
-	: m_MAPISendMail(NULL)
 {
-	m_hDll = LoadLibrary(TEXT("mapi32.dll"));
+	m_dll= LoadLibrary(_T("mapi32.dll"));
 	GETPROC(MAPISendMail);
 }
 
 CMapi32Api::~CMapi32Api()
 {
-	if(m_hDll != NULL)
-	{
-		FreeLibrary(m_hDll);
-	}
+	if (m_dll != NULL)
+		FreeLibrary(m_dll);
 }
 
 bool CMapi32Api::IsDllPresent()
 {
-	return SearchPath(NULL, TEXT("mapi32.dll"), NULL, 0, NULL, NULL) != 0;
+	return SearchPath(NULL, _T("mapi32.dll"), NULL, 0, NULL, NULL) != 0;
 }
 
 bool CMapi32Api::IsSupported()
@@ -213,140 +227,82 @@ ULONG CMapi32Api::MAPISendMail(LHANDLE lhSession, ULONG ulUIParam, lpMapiMessage
 	ASSERT(IsSupported());
 	return (*m_MAPISendMail)(lhSession, ulUIParam, lpMessage, flFlags, ulReserved);
 }
-*/
 
 /////////////////////////////////////////////////////////////////////////////
 
 CQueryDosDeviceApi::CQueryDosDeviceApi()
-	: m_hDll(dllKernel32.Handle())
-	, m_QueryDosDevice(m_hDll, TPROCNAME(QueryDosDevice))
+	: m_UnloadDll(false)
 {
+	m_dll = GetModuleHandle(_T("kernel32.dll"));
+	if(!m_dll)
+	{
+		m_dll = LoadLibrary(_T("kernel32.dll"));
+		m_UnloadDll = (m_dll != NULL);
+	}
+
+	TGETPROC(QueryDosDevice);
 }
 
 CQueryDosDeviceApi::~CQueryDosDeviceApi()
 {
+	if (m_UnloadDll)
+		FreeLibrary(m_dll);
 }
 
 bool CQueryDosDeviceApi::IsSupported()
 {
 	CHECK(QueryDosDevice);
-
 	return true;
 }
 
 DWORD CQueryDosDeviceApi::QueryDosDevice(LPCTSTR lpDeviceName, LPTSTR lpTargetPath, DWORD ucchMax)
 {
-	ASSERT(m_QueryDosDevice.IsSupported());
-	return m_QueryDosDevice.pfnFct(lpDeviceName, lpTargetPath, ucchMax);
+	ASSERT(IsSupported());
+	return (*m_QueryDosDevice)(lpDeviceName, lpTargetPath, ucchMax);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
 CGetCompressedFileSizeApi::CGetCompressedFileSizeApi()
-	: m_hDll(dllKernel32.Handle())
-	, m_GetCompressedFileSize(m_hDll, TPROCNAME(GetCompressedFileSize))
+	: m_UnloadDll(false)
 {
+	m_dll = GetModuleHandle(_T("kernel32.dll"));
+	if(!m_dll)
+	{
+		m_dll = LoadLibrary(_T("kernel32.dll"));
+		m_UnloadDll = (m_dll != NULL);
+	}
+
+	TGETPROC(GetCompressedFileSize);
 }
 
 CGetCompressedFileSizeApi::~CGetCompressedFileSizeApi()
 {
+	if (m_UnloadDll)
+		FreeLibrary(m_dll);
 }
 
 bool CGetCompressedFileSizeApi::IsSupported()
 {
 	CHECK(GetCompressedFileSize);
-
 	return true;
 }
 
 DWORD CGetCompressedFileSizeApi::GetCompressedFileSize(LPCTSTR lpFileName, LPDWORD lpFileSizeHigh)
 {
-	ASSERT(m_GetCompressedFileSize.IsSupported());
-	return m_GetCompressedFileSize.pfnFct(lpFileName, lpFileSizeHigh);
+	ASSERT(IsSupported());
+	return (*m_GetCompressedFileSize)(lpFileName, lpFileSizeHigh);
 }
 
 ULONGLONG CGetCompressedFileSizeApi::GetCompressedFileSize(LPCTSTR lpFileName)
 {
-	ULARGE_INTEGER u64ret = {0};
-	u64ret.LowPart = this->GetCompressedFileSize(lpFileName, &u64ret.HighPart);
-	return u64ret.QuadPart;
-}
-
-
-/////////////////////////////////////////////////////////////////////////////
-
-CGetDiskFreeSpaceApi::CGetDiskFreeSpaceApi()
-	: m_hDll(dllKernel32.Handle())
-	, m_GetDiskFreeSpace(m_hDll, TPROCNAME(GetDiskFreeSpace))
-	, m_GetDiskFreeSpaceEx(m_hDll, TPROCNAME(GetDiskFreeSpaceEx))
-{
-}
-
-CGetDiskFreeSpaceApi::~CGetDiskFreeSpaceApi()
-{
-}
-
-bool CGetDiskFreeSpaceApi::IsSupported()
-{
-	// Either of the functions exists definitely, even on Windows 95 w/o OSR2
-	return m_GetDiskFreeSpace.IsSupported() | m_GetDiskFreeSpaceEx.IsSupported();
-}
-
-void CGetDiskFreeSpaceApi::GetDiskFreeSpace(LPCTSTR pszRootPath, ULONGLONG& total, ULONGLONG& unused)
-{
-	ULARGE_INTEGER u64available = {0};
-	ULARGE_INTEGER u64total = {0};
-	ULARGE_INTEGER u64free = {0};
-
-	if(m_GetDiskFreeSpaceEx.IsSupported())
-	{
-		// On NT 4.0, the 2nd Parameter to this function must NOT be NULL.
-		BOOL b = m_GetDiskFreeSpaceEx.pfnFct(pszRootPath, &u64available, &u64total, &u64free);
-		if(!b)
-		{
-			TRACE(TEXT("GetDiskFreeSpaceEx(%s) failed.\n"), pszRootPath);
-		}
-	}
-	else /*if(m_GetDiskFreeSpace.IsSupported())*/ // compatibility mode ...
-	{
-		// Actually this code should only be called on versions not supporting
-		// GetDiskFreeSpaceEx(). By chance these versions are those which do
-		// not support partition sizes larger than 2 GB anyway :)
-		DWORD dwSectorsPerCluster = 0, dwBytesPerSector = 0;
-		BOOL b = m_GetDiskFreeSpace.pfnFct(pszRootPath, &dwSectorsPerCluster, &dwBytesPerSector, &u64free.LowPart, &u64total.LowPart);
-		if(!b)
-		{
-			TRACE(TEXT("GetDiskFreeSpace(%s) failed.\n"), pszRootPath);
-		}
-
-		// Now we need to do some arithmetics to get the sizes in byte ...
-		u64free.QuadPart *= dwSectorsPerCluster * dwBytesPerSector;
-		u64total.QuadPart *= dwSectorsPerCluster * dwBytesPerSector;
-	}
-
-	// Will fail, when more than 2^63 Bytes free ... (signed vs. unsigned type)
-	total = u64total.QuadPart;
-	unused = u64free.QuadPart;
-
-	// Race condition ...
-	ASSERT(unused <= total);
+	ASSERT(IsSupported());
+	ULARGE_INTEGER ret;
+	ret.LowPart = (*m_GetCompressedFileSize)(lpFileName, &ret.HighPart);
+	return ret.QuadPart;
 }
 
 // $Log$
-// Revision 1.11  2006/07/04 23:37:40  assarbad
-// - Added my email address in the header, adjusted "Author" -> "Author(s)"
-// - Added CVS Log keyword to those files not having it
-// - Added the files which I forgot during last commit
-//
-// Revision 1.10  2006/07/04 22:49:20  assarbad
-// - Replaced CVS keyword "Date" by "Header" in the file headers
-//
-// Revision 1.9  2006/07/04 20:45:23  assarbad
-// - See changelog for the changes of todays previous check-ins as well as this one!
-//
-// Revision 1.8  2005/10/01 11:21:08  assarbad
-// *** empty log message ***
-//
 // Revision 1.7  2005/04/17 12:27:21  assarbad
 // - For details see changelog of 2005-04-17
 //

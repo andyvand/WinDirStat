@@ -1,8 +1,7 @@
-// layout.cpp - Implementation of CLayout
+// layout.cpp	- Implementation of CLayout
 //
 // WinDirStat - Directory Statistics
-// Copyright (C) 2003-2005 Bernhard Seifert
-// Copyright (C) 2004-2006 Oliver Schneider (assarbad.net)
+// Copyright (C) 2003-2004 Bernhard Seifert
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,15 +17,14 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
-// Author(s): - bseifert -> bseifert@users.sourceforge.net, bseifert@daccord.net
-//            - assarbad -> http://assarbad.net/en/contact
+// Author: bseifert@users.sourceforge.net, bseifert@daccord.net
 //
-// $Header$
+// Last modified: $Date$
 
 #include "stdafx.h"
 #include "windirstat.h"
 #include "options.h"
-#include "layout.h"
+#include ".\layout.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -35,24 +33,24 @@
 CLayout::CLayout(CWnd *dialog, LPCTSTR name)
 {
 	ASSERT(dialog != NULL);
-	m_dialog = dialog;
-	m_name = name;
+	m_dialog= dialog;
+	m_name= name;
 	
 	// This is necessary because OnGetMinMaxInfo() will be called
 	// before OnInitDialog!
-	m_originalDialogSize.cx = 0;
-	m_originalDialogSize.cy = 0;
+	m_originalDialogSize.cx= 0;
+	m_originalDialogSize.cy= 0;
 }
 
 int CLayout::AddControl(CWnd *control, double movex, double movey, double stretchx, double stretchy)
 {
 	SControlInfo info;
 	
-	info.control = control;
-	info.movex = movex;
-	info.movey = movey;
-	info.stretchx = stretchx;
-	info.stretchy = stretchy;
+	info.control= control;
+	info.movex= movex;
+	info.movey= movey;
+	info.stretchx= stretchx;
+	info.stretchy= stretchy;
 	
 	return m_control.Add(info);
 }
@@ -67,33 +65,30 @@ void CLayout::OnInitDialog(bool centerWindow)
 	m_dialog->SetIcon(GetApp()->LoadIcon(IDR_MAINFRAME), false);
 
 	CRect rcDialog;
-	int i = 0;
 	m_dialog->GetWindowRect(rcDialog);
-	m_originalDialogSize = rcDialog.Size();
+	m_originalDialogSize= rcDialog.Size();
 
-	for(i = 0; i < m_control.GetSize(); i++)
+	for (int i=0; i < m_control.GetSize(); i++)
 	{
 		CRect rc;
 		m_control[i].control->GetWindowRect(rc);
 		m_dialog->ScreenToClient(rc);
-		m_control[i].originalRectangle = rc;
+		m_control[i].originalRectangle= rc;
 	}
 	
 	CRect sg;
 	m_dialog->GetClientRect(sg);
-	sg.left = sg.right - m_sizeGripper._width;
-	sg.top = sg.bottom - m_sizeGripper._width;
+	sg.left= sg.right - m_sizeGripper._width;
+	sg.top= sg.bottom - m_sizeGripper._width;
 	m_sizeGripper.Create(m_dialog, sg);
 
-	i = AddControl(&m_sizeGripper, 1, 1, 0, 0);
-	m_control[i].originalRectangle = sg;
+	i= AddControl(&m_sizeGripper, 1, 1, 0, 0);
+	m_control[i].originalRectangle= sg;
 
 	CPersistence::GetDialogRectangle(m_name, rcDialog);
 	m_dialog->MoveWindow(rcDialog);
-	if(centerWindow)
-	{
+	if (centerWindow)
 		m_dialog->CenterWindow();
-	}
 }
 
 void CLayout::OnDestroy()
@@ -107,27 +102,27 @@ void CLayout::OnSize()
 {
 	CRect rc;
 	m_dialog->GetWindowRect(rc);
-	CSize newDialogSize = rc.Size();
+	CSize newDialogSize= rc.Size();
 
-	CSize diff = newDialogSize - m_originalDialogSize;
+	CSize diff= newDialogSize - m_originalDialogSize;
 
 	// The DeferWindowPos-stuff prevents the controls
 	// from overwriting each other.
 
-	HDWP hdwp = BeginDeferWindowPos(m_control.GetSize());
+	HDWP hdwp= BeginDeferWindowPos(m_control.GetSize());
 
-	for(int i = 0; i < m_control.GetSize(); i++)
+	for (int i=0; i < m_control.GetSize(); i++)
 	{
-		CRect rc = m_control[i].originalRectangle;
+		CRect rc= m_control[i].originalRectangle;
 
 		CSize move(int(diff.cx * m_control[i].movex), int(diff.cy * m_control[i].movey));
 		CRect stretch(0, 0, int(diff.cx * m_control[i].stretchx), int(diff.cy * m_control[i].stretchy));
 		
-		rc += move;
-		rc += stretch;
+		rc+= move;
+		rc+= stretch;
 
-		hdwp = DeferWindowPos(hdwp, *m_control[i].control, NULL, rc.left, rc.top, rc.Width(), rc.Height(), 
-			SWP_NOOWNERZORDER | SWP_NOZORDER);
+		hdwp= DeferWindowPos(hdwp, *m_control[i].control, NULL, rc.left, rc.top, rc.Width(), rc.Height(), 
+			SWP_NOOWNERZORDER|SWP_NOZORDER);
 	}
 
 	EndDeferWindowPos(hdwp);
@@ -135,8 +130,8 @@ void CLayout::OnSize()
 
 void CLayout::OnGetMinMaxInfo(MINMAXINFO *mmi)
 {
-	mmi->ptMinTrackSize.x = m_originalDialogSize.cx;
-	mmi->ptMinTrackSize.y = m_originalDialogSize.cy;
+	mmi->ptMinTrackSize.x= m_originalDialogSize.cx;
+	mmi->ptMinTrackSize.y= m_originalDialogSize.cy;
 }
 
 
@@ -157,8 +152,8 @@ void CLayout::CSizeGripper::Create(CWnd *parent, CRect rc)
 			(HBRUSH)(COLOR_BTNFACE + 1), 
 			0
 		), 
-		strEmpty, 
-		WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS, 
+		_T(""), 
+		WS_CHILD|WS_VISIBLE|WS_CLIPSIBLINGS, 
 		rc, 
 		parent, 
 		IDC_SIZEGRIPPER
@@ -183,20 +178,20 @@ void CLayout::CSizeGripper::OnPaint()
 	CPoint start;
 	CPoint end;
 
-	start.x = 1; 
-	start.y = _width;
-	end.x = _width; 
-	end.y = 1;
+	start.x= 1; 
+	start.y= _width;
+	end.x= _width; 
+	end.y= 1;
 
 	DrawShadowLine(&dc, start, end);
 
-	start.x += 4;
-	end.y += 4;
+	start.x+= 4;
+	end.y+= 4;
 
 	DrawShadowLine(&dc, start, end);
 
-	start.x += 4;
-	end.y += 4;
+	start.x+= 4;
+	end.y+= 4;
 
 	DrawShadowLine(&dc, start, end);
 
@@ -231,32 +226,17 @@ void CLayout::CSizeGripper::DrawShadowLine(CDC *pdc, CPoint start, CPoint end)
 	}
 }
 
-LRESULT CLayout::CSizeGripper::OnNcHitTest(CPoint point)
+UINT CLayout::CSizeGripper::OnNcHitTest(CPoint point)
 {
 	ScreenToClient(&point);
 
-	if(point.x + point.y >= _width)
-	{
+	if (point.x + point.y >= _width)
 		return HTBOTTOMRIGHT;
-	}
 	else
-	{
 		return 0;
-	}
 }
 
 // $Log$
-// Revision 1.8  2006/07/04 23:37:39  assarbad
-// - Added my email address in the header, adjusted "Author" -> "Author(s)"
-// - Added CVS Log keyword to those files not having it
-// - Added the files which I forgot during last commit
-//
-// Revision 1.7  2006/07/04 22:49:20  assarbad
-// - Replaced CVS keyword "Date" by "Header" in the file headers
-//
-// Revision 1.6  2006/07/04 20:45:23  assarbad
-// - See changelog for the changes of todays previous check-ins as well as this one!
-//
 // Revision 1.5  2004/11/05 16:53:07  assarbad
 // Added Date and History tag where appropriate.
 //

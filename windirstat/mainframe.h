@@ -1,8 +1,7 @@
-// mainframe.h - Declaration of CMySplitterWnd and CMainFrame
+// mainframe.h		- Declaration of CMySplitterWnd and CMainFrame
 //
 // WinDirStat - Directory Statistics
-// Copyright (C) 2003-2005 Bernhard Seifert
-// Copyright (C) 2004-2006 Oliver Schneider (assarbad.net)
+// Copyright (C) 2003-2004 Bernhard Seifert
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,15 +17,13 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
-// Author(s): - bseifert -> bseifert@users.sourceforge.net, bseifert@daccord.net
-//            - assarbad -> http://assarbad.net/en/contact
+// Author: bseifert@users.sourceforge.net, bseifert@daccord.net
 //
-// $Header$
+// Last modified: $Date$
 
 #pragma once
 
 #include "pacman.h"
-#include "../common/wds_constants.h"
 
 class CMySplitterWnd;
 class CMainFrame;
@@ -104,7 +101,7 @@ class CPacmanControl: public CStatic
 {
 public:
 	CPacmanControl();
-	void Drive(ULONGLONG readJobs);
+	void Drive(LONGLONG readJobs);
 	void Start(bool start);
 
 protected:
@@ -162,9 +159,9 @@ public:
 	CGraphView *GetGraphView();
 	CTypeView *GetTypeView();
 
-	void ShowProgress(ULONGLONG range);
+	void ShowProgress(LONGLONG range);
 	void HideProgress();
-	void SetProgressPos(ULONGLONG pos);
+	void SetProgressPos(LONGLONG pos);
 	void SetProgressPos100();
 	bool IsProgressSuspended();
 	void DrivePacman();
@@ -189,11 +186,11 @@ protected:
 	void DestroyProgress();
 
 	void UpdateCleanupMenu(CMenu *menu);
-	void MyQueryRecycleBin(CRecycleBinApi& rb, ULONGLONG& items, ULONGLONG& bytes);
+	void MyQueryRecycleBin(CRecycleBinApi& rb, LONGLONG& items, LONGLONG& bytes);
 
 	bool m_progressVisible;		// True while progress must be shown (either pacman or progressbar)
-	ULONGLONG m_progressRange;	// Progress range. A range of 0 means that we have no range available. In this case we should display pacman.
-	ULONGLONG m_progressPos;		// Progress position (<= progressRange, or an item count in case of m_progressRang == 0)
+	LONGLONG m_progressRange;	// Progress range. A range of 0 means that we have no range available. In this case we should display pacman.
+	LONGLONG m_progressPos;		// Progress position (<= progressRange, or an item count in case of m_progressRang == 0)
 
 	CMySplitterWnd m_wndSubSplitter;	// Contains the two upper views
 	CMySplitterWnd m_wndSplitter;		// Contains (a) m_wndSubSplitter and (b) the graphview.
@@ -232,27 +229,12 @@ public:
 		virtual void Dump(CDumpContext& dc) const;
 	#endif
 		afx_msg void OnSysColorChange();
-		afx_msg void OnHelpCheckforupdates();
 };
 
 
 
 
 // $Log$
-// Revision 1.9  2006/07/04 23:37:39  assarbad
-// - Added my email address in the header, adjusted "Author" -> "Author(s)"
-// - Added CVS Log keyword to those files not having it
-// - Added the files which I forgot during last commit
-//
-// Revision 1.8  2006/07/04 22:49:20  assarbad
-// - Replaced CVS keyword "Date" by "Header" in the file headers
-//
-// Revision 1.7  2006/07/04 20:45:23  assarbad
-// - See changelog for the changes of todays previous check-ins as well as this one!
-//
-// Revision 1.6  2005/10/01 11:21:08  assarbad
-// *** empty log message ***
-//
 // Revision 1.5  2004/11/05 16:53:07  assarbad
 // Added Date and History tag where appropriate.
 //

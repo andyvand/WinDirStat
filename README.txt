@@ -1,8 +1,7 @@
 =============================================================================
 WinDirStat - Windows Directory Statistics
-(C) 2003-2005 Bernhard Seifert (bseifert@users.sourceforge.net)
-(C) 2004-2006 Oliver Schneider (assarbad.net)
-$Header$
+(c) 2003-2005 Bernhard Seifert (bseifert@users.sourceforge.net)
+Last modified: $Date$
 =============================================================================
 
 This project, made up of

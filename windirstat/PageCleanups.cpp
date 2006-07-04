@@ -1,8 +1,7 @@
-// PageCleanups.cpp - Implementation of CPageCleanups
+// PageCleanups.cpp	- Implementation of CPageCleanups
 //
 // WinDirStat - Directory Statistics
-// Copyright (C) 2003-2005 Bernhard Seifert
-// Copyright (C) 2004-2006 Oliver Schneider (assarbad.net)
+// Copyright (C) 2003-2004 Bernhard Seifert
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,14 +17,13 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
-// Author(s): - bseifert -> bseifert@users.sourceforge.net, bseifert@daccord.net
-//            - assarbad -> http://assarbad.net/en/contact
+// Author: bseifert@users.sourceforge.net, bseifert@daccord.net
 //
-// $Header$
+// Last modified: $Date$
 
 #include "stdafx.h"
 #include "windirstat.h"
-#include "PageCleanups.h"
+#include ".\pagecleanups.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -36,7 +34,7 @@ IMPLEMENT_DYNAMIC(CPageCleanups, CPropertyPage)
 CPageCleanups::CPageCleanups()
 	: CPropertyPage(CPageCleanups::IDD)
 	, m_enabled(FALSE)
-	, m_title(strEmpty)
+	, m_title(_T(""))
 	, m_worksForDrives(FALSE)
 	, m_worksForDirectories(FALSE)
 	, m_worksForFilesFolder(FALSE)
@@ -47,7 +45,7 @@ CPageCleanups::CPageCleanups()
 	, m_showConsoleWindow(FALSE)
 	, m_waitForCompletion(FALSE)
 	, m_refreshPolicy(0)
-	, m_commandLine(strEmpty)
+	, m_commandLine(_T(""))
 	, m_current(-1)
 {
 }
@@ -128,10 +126,8 @@ BOOL CPageCleanups::OnInitDialog()
 
 	GetOptions()->GetUserDefinedCleanups(m_udc);
 
-	for(int i = 0; i < USERDEFINEDCLEANUPCOUNT; i++)
-	{
+	for (int i=0; i < USERDEFINEDCLEANUPCOUNT; i++)
 		m_list.AddString(m_udc[i].title);
-	}
 
 	m_list.SetCurSel(0);
 	OnLbnSelchangeList();
@@ -152,10 +148,10 @@ void CPageCleanups::OnLbnSelchangeList()
 {
 	CheckEmptyTitle();
 
-	m_current = m_list.GetCurSel();
-	if(m_current < 0 || m_current >= USERDEFINEDCLEANUPCOUNT)
+	m_current= m_list.GetCurSel();
+	if (m_current < 0 || m_current >= USERDEFINEDCLEANUPCOUNT)
 	{
-		m_current = USERDEFINEDCLEANUPCOUNT - 1;
+		m_current= USERDEFINEDCLEANUPCOUNT - 1;
 		m_list.SetCurSel(m_current);
 	}
 	CurrentUdcToDialog();
@@ -163,13 +159,11 @@ void CPageCleanups::OnLbnSelchangeList()
 
 void CPageCleanups::CheckEmptyTitle()
 {
-	if(m_current == -1)
-	{
+	if (m_current == -1)
 		return;
-	}
 
 	UpdateData();
-	if(m_title.IsEmpty())
+	if (m_title.IsEmpty())
 	{
 		m_title.FormatMessage(IDS_USERDEFINEDCLEANUPd, m_current);
 		UpdateData(false);
@@ -178,25 +172,25 @@ void CPageCleanups::CheckEmptyTitle()
 		m_list.InsertString(m_current, m_title);
 
 		DialogToCurrentUdc();
-		m_udc[m_current].virginTitle = true;
+		m_udc[m_current].virginTitle= true;
 	}
 }
 
 void CPageCleanups::CurrentUdcToDialog()
 {
-	m_enabled = m_udc[m_current].enabled;
-	m_title = m_udc[m_current].title;
-	m_worksForDrives = m_udc[m_current].worksForDrives;
-	m_worksForDirectories = m_udc[m_current].worksForDirectories;
-	m_worksForFilesFolder = m_udc[m_current].worksForFilesFolder;
-	m_worksForFiles = m_udc[m_current].worksForFiles;
-	m_worksForUncPaths = m_udc[m_current].worksForUncPaths;
-	m_commandLine = m_udc[m_current].commandLine;
-	m_recurseIntoSubdirectories = m_udc[m_current].recurseIntoSubdirectories;
-	m_askForConfirmation = m_udc[m_current].askForConfirmation;
-	m_showConsoleWindow = m_udc[m_current].showConsoleWindow;
-	m_waitForCompletion = m_udc[m_current].waitForCompletion;
-	m_refreshPolicy = m_udc[m_current].refreshPolicy;
+	m_enabled= m_udc[m_current].enabled;
+	m_title= m_udc[m_current].title;
+	m_worksForDrives= m_udc[m_current].worksForDrives;
+	m_worksForDirectories= m_udc[m_current].worksForDirectories;
+	m_worksForFilesFolder= m_udc[m_current].worksForFilesFolder;
+	m_worksForFiles= m_udc[m_current].worksForFiles;
+	m_worksForUncPaths= m_udc[m_current].worksForUncPaths;
+	m_commandLine= m_udc[m_current].commandLine;
+	m_recurseIntoSubdirectories= m_udc[m_current].recurseIntoSubdirectories;
+	m_askForConfirmation= m_udc[m_current].askForConfirmation;
+	m_showConsoleWindow= m_udc[m_current].showConsoleWindow;
+	m_waitForCompletion= m_udc[m_current].waitForCompletion;
+	m_refreshPolicy= m_udc[m_current].refreshPolicy;
 
 	UpdateControlStatus();
 	UpdateData(false);
@@ -207,40 +201,32 @@ void CPageCleanups::DialogToCurrentUdc()
 {
 	UpdateData();
 
-	m_udc[m_current].enabled = m_enabled;
-	m_udc[m_current].title = m_title;
-	m_udc[m_current].worksForDrives = m_worksForDrives;
-	m_udc[m_current].worksForDirectories = m_worksForDirectories;
-	m_udc[m_current].worksForFilesFolder = m_worksForFilesFolder;
-	m_udc[m_current].worksForFiles = m_worksForFiles;
-	m_udc[m_current].worksForUncPaths = m_worksForUncPaths;
-	m_udc[m_current].commandLine = m_commandLine;
-	m_udc[m_current].recurseIntoSubdirectories = m_recurseIntoSubdirectories;
-	m_udc[m_current].askForConfirmation = m_askForConfirmation;
-	m_udc[m_current].showConsoleWindow = m_showConsoleWindow;
-	m_udc[m_current].waitForCompletion = m_waitForCompletion;
-	m_udc[m_current].refreshPolicy = (REFRESHPOLICY)m_refreshPolicy;
+	m_udc[m_current].enabled= m_enabled;
+	m_udc[m_current].title= m_title;
+	m_udc[m_current].worksForDrives= m_worksForDrives;
+	m_udc[m_current].worksForDirectories= m_worksForDirectories;
+	m_udc[m_current].worksForFilesFolder= m_worksForFilesFolder;
+	m_udc[m_current].worksForFiles= m_worksForFiles;
+	m_udc[m_current].worksForUncPaths= m_worksForUncPaths;
+	m_udc[m_current].commandLine= m_commandLine;
+	m_udc[m_current].recurseIntoSubdirectories= m_recurseIntoSubdirectories;
+	m_udc[m_current].askForConfirmation= m_askForConfirmation;
+	m_udc[m_current].showConsoleWindow= m_showConsoleWindow;
+	m_udc[m_current].waitForCompletion= m_waitForCompletion;
+	m_udc[m_current].refreshPolicy= (REFRESHPOLICY)m_refreshPolicy;
 }
 
 void CPageCleanups::OnSomethingChanged()
 {
 	UpdateData();
-	if(!m_worksForDrives && !m_worksForDirectories)
-	{
-		m_recurseIntoSubdirectories = false;
-	}
-	if(!m_worksForDrives && !m_worksForDirectories)
-	{
-		m_recurseIntoSubdirectories = false;
-	}
-	if(!m_waitForCompletion)
-	{
-		m_refreshPolicy = RP_NO_REFRESH;
-	}
-	if(m_recurseIntoSubdirectories)
-	{
-		m_waitForCompletion = true;
-	}
+	if (!m_worksForDrives && !m_worksForDirectories)
+		m_recurseIntoSubdirectories= false;
+	if (!m_worksForDrives && !m_worksForDirectories)
+		m_recurseIntoSubdirectories= false;
+	if (!m_waitForCompletion)
+		m_refreshPolicy= RP_NO_REFRESH;
+	if (m_recurseIntoSubdirectories)
+		m_waitForCompletion= true;
 	UpdateData(false);
 	DialogToCurrentUdc();
 	SetModified();
@@ -272,7 +258,7 @@ void CPageCleanups::OnBnClickedEnabled()
 {
 	OnSomethingChanged();
 	UpdateControlStatus();
-	if(m_enabled)
+	if (m_enabled)
 	{
 		m_ctlTitle.SetFocus();
 		m_ctlTitle.SetSel(0, -1, true);
@@ -286,7 +272,7 @@ void CPageCleanups::OnBnClickedEnabled()
 void CPageCleanups::OnEnChangeTitle()
 {
 	OnSomethingChanged();
-	m_udc[m_current].virginTitle = false;
+	m_udc[m_current].virginTitle= false;
 	m_list.DeleteString(m_current);
 	m_list.InsertString(m_current, m_title);
 	m_list.SetCurSel(m_current);
@@ -357,7 +343,7 @@ void CPageCleanups::OnBnClickedUp()
 	
 	UpdateData();
 
-	USERDEFINEDCLEANUP h = m_udc[m_current - 1];
+	USERDEFINEDCLEANUP h= m_udc[m_current - 1];
 	m_udc[m_current - 1]= m_udc[m_current];
 	m_udc[m_current]= h;
 
@@ -377,7 +363,7 @@ void CPageCleanups::OnBnClickedDown()
 	
 	UpdateData();
 
-	USERDEFINEDCLEANUP h = m_udc[m_current + 1];
+	USERDEFINEDCLEANUP h= m_udc[m_current + 1];
 	m_udc[m_current + 1]= m_udc[m_current];
 	m_udc[m_current]= h;
 
@@ -397,17 +383,6 @@ void CPageCleanups::OnBnClickedHelpbutton()
 }
 
 // $Log$
-// Revision 1.10  2006/07/04 23:37:39  assarbad
-// - Added my email address in the header, adjusted "Author" -> "Author(s)"
-// - Added CVS Log keyword to those files not having it
-// - Added the files which I forgot during last commit
-//
-// Revision 1.9  2006/07/04 22:49:20  assarbad
-// - Replaced CVS keyword "Date" by "Header" in the file headers
-//
-// Revision 1.8  2006/07/04 20:45:22  assarbad
-// - See changelog for the changes of todays previous check-ins as well as this one!
-//
 // Revision 1.7  2004/11/13 08:17:07  bseifert
 // Remove blanks in Unicode Configuration names.
 //

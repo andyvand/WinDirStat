@@ -1,8 +1,7 @@
 // globalhelpers.cpp - Implementation of global helper functions
 //
 // WinDirStat - Directory Statistics
-// Copyright (C) 2003-2005 Bernhard Seifert
-// Copyright (C) 2004-2006 Oliver Schneider (assarbad.net)
+// Copyright (C) 2003-2004 Bernhard Seifert
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,10 +17,9 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
-// Author(s): - bseifert -> bseifert@users.sourceforge.net, bseifert@daccord.net
-//            - assarbad -> http://assarbad.net/en/contact
+// Author: bseifert@users.sourceforge.net, bseifert@daccord.net
 //
-// $Header$
+// Last modified: $Date$
 
 #include "stdafx.h"
 #include "windirstat.h"
@@ -33,7 +31,7 @@
 
 namespace
 {
-	CString FormatLongLongNormal(ULONGLONG n)
+	CString FormatLongLongNormal(LONGLONG n)
 	{
 		// Returns formatted number like "123.456.789".
 
@@ -43,37 +41,31 @@ namespace
 		
 		do
 		{
-			int rest = (int)(n % 1000);
+			int rest= (int)(n % 1000);
 			n/= 1000;
 
 			CString s;
-			if(n > 0)
-			{
-				s.Format(TEXT("%s%03d"), GetLocaleThousandSeparator(), rest);
-			}
+			if (n > 0)
+				s.Format(_T("%s%03d"), GetLocaleThousandSeparator(), rest);
 			else
-			{
-				s.Format(TEXT("%d"), rest);
-			}
+				s.Format(_T("%d"), rest);
 
-			all = s + all;
-		} while(n > 0);
+			all= s + all;
+		} while (n > 0);
 
 		return all;
 	}
 
 	void CacheString(CString& s, UINT resId, LPCTSTR defaultVal)
 	{
-		ASSERT(_tcslen(defaultVal) > 0);
+		ASSERT(lstrlen(defaultVal) > 0);
 
-		if(s.IsEmpty())
+		if (s.IsEmpty())
 		{
-			s = LoadString(resId);
+			s= LoadString(resId);
 		
-			if(s.IsEmpty())
-			{
-				s = defaultVal;
-			}
+			if (s.IsEmpty())
+				s= defaultVal;
 		}
 	}
 
@@ -81,9 +73,9 @@ namespace
 
 CString GetLocaleString(LCTYPE lctype, LANGID langid)
 {
-	LCID lcid = MAKELCID(langid, SORT_DEFAULT);
+	LCID lcid= MAKELCID(langid, SORT_DEFAULT);
 
-	int len = GetLocaleInfo(lcid, lctype, NULL, 0);
+	int len= GetLocaleInfo(lcid, lctype, NULL, 0);
 	CString s;
 
 	GetLocaleInfo(lcid, lctype, s.GetBuffer(len), len);
@@ -94,17 +86,15 @@ CString GetLocaleString(LCTYPE lctype, LANGID langid)
 
 CString GetLocaleLanguage(LANGID langid)
 {
-	CString s = GetLocaleString(LOCALE_SNATIVELANGNAME, langid);
+	CString s= GetLocaleString(LOCALE_SNATIVELANGNAME, langid);
 
 	// In the French case, the system returns "francais",
 	// but we want "Francais".
 
-	if(s.GetLength() > 0)
-	{
+	if (s.GetLength() > 0)
 		s.SetAt(0, (TCHAR)_totupper(s[0]));
-	}
 
-	return s + TEXT(" - ") + GetLocaleString(LOCALE_SNATIVECTRYNAME, langid);
+	return s + _T(" - ") + GetLocaleString(LOCALE_SNATIVECTRYNAME, langid);
 }
 
 CString GetLocaleThousandSeparator()
@@ -117,19 +107,15 @@ CString GetLocaleDecimalSeparator()
 	return GetLocaleString(LOCALE_SDECIMAL, GetApp()->GetEffectiveLangid());
 }
 
-CString FormatBytes(ULONGLONG n)
+CString FormatBytes(LONGLONG n)
 {
-	if(GetOptions()->IsHumanFormat())
-	{
+	if (GetOptions()->IsHumanFormat())
 		return FormatLongLongHuman(n);
-	}
 	else
-	{
 		return FormatLongLongNormal(n);
-	}
 }
 
-CString FormatLongLongHuman(ULONGLONG n)
+CString FormatLongLongHuman(LONGLONG n)
 {
 	// Returns formatted number like "12,4 GB".
 	ASSERT(n >= 0);
@@ -152,36 +138,24 @@ CString FormatLongLongHuman(ULONGLONG n)
 
 	double TB = (int)(n);
 
-	if(TB != 0 || GB == base - 1 && MB >= half)
-	{
-		s.Format(TEXT("%s %s"), FormatDouble(TB + GB/base), GetSpec_TB());
-	}
-	else if(GB != 0 || MB == base - 1 && KB >= half)
-	{
-		s.Format(TEXT("%s %s"), FormatDouble(GB + MB/base), GetSpec_GB());
-	}
-	else if(MB != 0 || KB == base - 1 && B >= half)
-	{
-		s.Format(TEXT("%s %s"), FormatDouble(MB + KB/base), GetSpec_MB());
-	}
-	else if(KB != 0)
-	{
-		s.Format(TEXT("%s %s"), FormatDouble(KB + B/base), GetSpec_KB());
-	}
-	else if(B != 0)
-	{
-		s.Format(TEXT("%d %s"), (int)B, GetSpec_Bytes());
-	}
+	if (TB != 0 || GB == base - 1 && MB >= half)
+		s.Format(_T("%s %s"), FormatDouble(TB + GB/base), GetSpec_TB());
+	else if (GB != 0 || MB == base - 1 && KB >= half)
+		s.Format(_T("%s %s"), FormatDouble(GB + MB/base), GetSpec_GB());
+	else if (MB != 0 || KB == base - 1 && B >= half)
+		s.Format(_T("%s %s"), FormatDouble(MB + KB/base), GetSpec_MB());
+	else if (KB != 0)
+		s.Format(_T("%s %s"), FormatDouble(KB + B/base), GetSpec_KB());
+	else if (B != 0)
+		s.Format(_T("%d %s"), (int)B, GetSpec_Bytes());
 	else
-	{
-		s = TEXT("0");
-	}
+		s= _T("0");
 
 	return s;
 }
 
 
-CString FormatCount(ULONGLONG n)
+CString FormatCount(LONGLONG n)
 {
 	return FormatLongLongNormal(n);
 }
@@ -190,33 +164,30 @@ CString FormatDouble(double d) // "98,4" or "98.4"
 {
 	ASSERT(d >= 0);
 
-	d += 0.05;
+	d+= 0.05;
 
-	int i = (int)floor(d);
-	int r = (int)(10 * fmod(d, 1));
+	int i= (int)floor(d);
+	int r= (int)(10 * fmod(d, 1));
 
 	CString s;
-    s.Format(TEXT("%d%s%d"), i, GetLocaleDecimalSeparator(), r);
+    s.Format(_T("%d%s%d"), i, GetLocaleDecimalSeparator(), r);
 
 	return s;
 }
 
 CString PadWidthBlanks(CString n, int width)
 {
-	int blankCount = width - n.GetLength();
-	if(blankCount > 0)
+	int blankCount= width - n.GetLength();
+	if (blankCount > 0)
 	{
-		int i = 0;
 		CString b;
-		LPTSTR psz = b.GetBuffer(blankCount + 1);
-		for(i = 0; i < blankCount; i++)
-		{
-			psz[i]= TEXT(' ');
-		}
+		LPTSTR psz= b.GetBuffer(blankCount + 1);
+		for (int i=0; i < blankCount; i++)
+			psz[i]= _T(' ');
 		psz[i]= 0;
 		b.ReleaseBuffer();
 
-		n = b + n;
+		n= b + n;
 	}
 	return n;
 }
@@ -224,10 +195,8 @@ CString PadWidthBlanks(CString n, int width)
 CString FormatFileTime(const FILETIME& t)
 {
 	SYSTEMTIME st;
-	if(!FileTimeToSystemTime(&t, &st))
-	{
-		return MdGetWinErrorText(GetLastError());
-	}
+	if (!FileTimeToSystemTime(&t, &st))
+		return MdGetWinerrorText(GetLastError());
 
 	LCID lcid = MAKELCID(GetApp()->GetEffectiveLangid(), SORT_DEFAULT);
 
@@ -239,23 +208,21 @@ CString FormatFileTime(const FILETIME& t)
 	VERIFY(0 < GetTimeFormat(lcid, 0, &st, NULL, time.GetBuffer(256), 256));
 	time.ReleaseBuffer();
 
-	return date + TEXT("  ") + time;
+	return date + _T("  ") + time;
 }
 
 CString FormatAttributes(DWORD attr)
 {
 	if(attr == INVALID_FILE_ATTRIBUTES)
-	{
-		return TEXT("?????");
-	}
+		return _T("?????");
 
 	CString attributes;
-	attributes.Append((attr & FILE_ATTRIBUTE_READONLY  ) ? TEXT("R") : strEmpty);
-	attributes.Append((attr & FILE_ATTRIBUTE_HIDDEN    ) ? TEXT("H") : strEmpty);
-	attributes.Append((attr & FILE_ATTRIBUTE_SYSTEM    ) ? TEXT("S") : strEmpty);
-	attributes.Append((attr & FILE_ATTRIBUTE_ARCHIVE   ) ? TEXT("A") : strEmpty);
-	attributes.Append((attr & FILE_ATTRIBUTE_COMPRESSED) ? TEXT("C") : strEmpty);
-	attributes.Append((attr & FILE_ATTRIBUTE_ENCRYPTED ) ? TEXT("E") : strEmpty);
+	attributes.Append((attr & FILE_ATTRIBUTE_READONLY  ) ? _T("R") : _T(""));
+	attributes.Append((attr & FILE_ATTRIBUTE_HIDDEN    ) ? _T("H") : _T(""));
+	attributes.Append((attr & FILE_ATTRIBUTE_SYSTEM    ) ? _T("S") : _T(""));
+	attributes.Append((attr & FILE_ATTRIBUTE_ARCHIVE   ) ? _T("A") : _T(""));
+	attributes.Append((attr & FILE_ATTRIBUTE_COMPRESSED) ? _T("C") : _T(""));
+	attributes.Append((attr & FILE_ATTRIBUTE_ENCRYPTED ) ? _T("E") : _T(""));
 
 	return attributes;
 }
@@ -263,23 +230,19 @@ CString FormatAttributes(DWORD attr)
 CString FormatMilliseconds(DWORD ms)
 {
 	CString ret;
-	DWORD sec = (ms + 500) / 1000;
+	DWORD sec= (ms + 500) / 1000;
 
-	DWORD s = sec % 60;
-	DWORD min = sec / 60;
+	DWORD s= sec % 60;
+	DWORD min= sec / 60;
 
-	DWORD m = min % 60;
+	DWORD m= min % 60;
 
-	DWORD h = min / 60;
+	DWORD h= min / 60;
 
-	if(h > 0)
-	{
-		ret.Format(TEXT("%u:%02u:%02u"), h, m, s);
-	}
+	if (h > 0)
+		ret.Format(_T("%u:%02u:%02u"), h, m, s);
 	else
-	{
-		ret.Format(TEXT("%u:%02u"), m, s);
-	}
+		ret.Format(_T("%u:%02u"), m, s);
 	return ret;
 }
 
@@ -288,15 +251,13 @@ bool GetVolumeName(LPCTSTR rootPath, CString& volumeName)
 	CString ret;
 	DWORD dummy;
 
-	UINT old = SetErrorMode(SEM_FAILCRITICALERRORS);
+	UINT old= SetErrorMode(SEM_FAILCRITICALERRORS);
 	
-	bool b = GetVolumeInformation(rootPath, volumeName.GetBuffer(256), 256, &dummy, &dummy, &dummy, NULL, 0);
+	bool b= GetVolumeInformation(rootPath, volumeName.GetBuffer(256), 256, &dummy, &dummy, &dummy, NULL, 0);
 	volumeName.ReleaseBuffer();
 
-	if(!b)
-	{
-		TRACE(TEXT("GetVolumeInformation(%s) failed: %u\n"), rootPath, GetLastError());
-	}
+	if (!b)
+		TRACE(_T("GetVolumeInformation(%s) failed: %u\n"), rootPath, GetLastError());
 
 	SetErrorMode(old);
 	
@@ -310,14 +271,14 @@ CString FormatVolumeNameOfRootPath(CString rootPath)
 {
 	CString ret;
 	CString volumeName;
-	bool b = GetVolumeName(rootPath, volumeName);
-	if(b)
+	bool b= GetVolumeName(rootPath, volumeName);
+	if (b)
 	{
-		ret = FormatVolumeName(rootPath, volumeName);
+		ret= FormatVolumeName(rootPath, volumeName);
 	}
 	else
 	{
-		ret = rootPath;
+		ret= rootPath;
 	}
 	return ret;
 }
@@ -325,7 +286,7 @@ CString FormatVolumeNameOfRootPath(CString rootPath)
 CString FormatVolumeName(CString rootPath, CString volumeName)
 {
 	CString ret;
-	ret.Format(TEXT("%s (%s)"), volumeName, rootPath.Left(2));
+	ret.Format(_T("%s (%s)"), volumeName, rootPath.Left(2));
 	return ret;
 }
 
@@ -334,20 +295,20 @@ CString FormatVolumeName(CString rootPath, CString volumeName)
 // Or, if name like "C:\", it returns "C:".
 CString PathFromVolumeName(CString name)
 {
-	int i = name.ReverseFind(chrBracketClose);
-	if(i == -1)
+	int i= name.ReverseFind(_T(')'));
+	if (i == -1)
 	{
 		ASSERT(name.GetLength() == 3);
 		return name.Left(2);
 	}
 
 	ASSERT(i != -1);
-	int k = name.ReverseFind(chrBracketOpen);
+	int k= name.ReverseFind(_T('('));
 	ASSERT(k != -1);
 	ASSERT(k < i);
-	CString path = name.Mid(k + 1, i - k - 1);
+	CString path= name.Mid(k + 1, i - k - 1);
 	ASSERT(path.GetLength() == 2);
-	ASSERT(path[1] == chrColon);
+	ASSERT(path[1] == _T(':'));
 
 	return path;
 }
@@ -356,18 +317,18 @@ CString PathFromVolumeName(CString name)
 CString GetParseNameOfMyComputer() throw (CException *)
 {
 	CComPtr<IShellFolder> sf;
-	HRESULT hr = SHGetDesktopFolder(&sf);
-	MdThrowFailed(hr, TEXT("SHGetDesktopFolder"));
+	HRESULT hr= SHGetDesktopFolder(&sf);
+	MdThrowFailed(hr, _T("SHGetDesktopFolder"));
 
 	CCoTaskMem<LPITEMIDLIST> pidl;
-	hr = SHGetSpecialFolderLocation(NULL, CSIDL_DRIVES, &pidl);
-	MdThrowFailed(hr, TEXT("SHGetSpecialFolderLocation(CSIDL_DRIVES)"));
+	hr= SHGetSpecialFolderLocation(NULL, CSIDL_DRIVES, &pidl);
+	MdThrowFailed(hr, _T("SHGetSpecialFolderLocation(CSIDL_DRIVES)"));
 
 	STRRET name;
 	ZeroMemory(&name, sizeof(name));
-	name.uType = STRRET_CSTR;
-	hr = sf->GetDisplayNameOf(pidl, SHGDN_FORPARSING, &name);
-	MdThrowFailed(hr, TEXT("GetDisplayNameOf(My Computer)"));
+	name.uType= STRRET_CSTR;
+	hr= sf->GetDisplayNameOf(pidl, SHGDN_FORPARSING, &name);
+	MdThrowFailed(hr, _T("GetDisplayNameOf(My Computer)"));
 
 	return MyStrRetToString(pidl, &name);
 }
@@ -375,19 +336,19 @@ CString GetParseNameOfMyComputer() throw (CException *)
 void GetPidlOfMyComputer(LPITEMIDLIST *ppidl) throw (CException *)
 {
 	CComPtr<IShellFolder> sf;
-	HRESULT hr = SHGetDesktopFolder(&sf);
-	MdThrowFailed(hr, TEXT("SHGetDesktopFolder"));
+	HRESULT hr= SHGetDesktopFolder(&sf);
+	MdThrowFailed(hr, _T("SHGetDesktopFolder"));
 
-	hr = SHGetSpecialFolderLocation(NULL, CSIDL_DRIVES, ppidl);
-	MdThrowFailed(hr, TEXT("SHGetSpecialFolderLocation(CSIDL_DRIVES)"));
+	hr= SHGetSpecialFolderLocation(NULL, CSIDL_DRIVES, ppidl);
+	MdThrowFailed(hr, _T("SHGetSpecialFolderLocation(CSIDL_DRIVES)"));
 }
 
 void ShellExecuteWithAssocDialog(HWND hwnd, LPCTSTR filename) throw (CException *)
 {
 	CWaitCursor wc;
 
-	UINT u = (UINT)ShellExecute(hwnd, NULL, filename, NULL, NULL, SW_SHOWNORMAL);
-	if(u == SE_ERR_NOASSOC)
+	UINT u= (UINT)ShellExecute(hwnd, NULL, filename, NULL, NULL, SW_SHOWNORMAL);
+	if (u == SE_ERR_NOASSOC)
 	{
 		// Q192352
 		CString sysDir;
@@ -395,24 +356,42 @@ void ShellExecuteWithAssocDialog(HWND hwnd, LPCTSTR filename) throw (CException 
 		GetSystemDirectory(sysDir.GetBuffer(_MAX_PATH), _MAX_PATH);
 		sysDir.ReleaseBuffer();
 		
-		CString parameters = TEXT("shell32.dll,OpenAs_RunDLL ");
-		u = (UINT)ShellExecute(hwnd, TEXT("open"), TEXT("RUNDLL32.EXE"), parameters + filename, sysDir, SW_SHOWNORMAL);
+		CString parameters = _T("shell32.dll,OpenAs_RunDLL ");
+		u= (UINT)ShellExecute(hwnd, _T("open"), _T("RUNDLL32.EXE"), parameters + filename, sysDir, SW_SHOWNORMAL);
 	}
 		
-	if(u <= 32)
+	if (u <= 32)
 	{
-		MdThrowStringExceptionF(TEXT("ShellExecute failed: %1!s!"), GetShellExecuteError(u));
+		MdThrowStringExceptionF(_T("ShellExecute failed: %1!s!"), GetShellExecuteError(u));
 	}
+}
+
+void MyGetDiskFreeSpace(LPCTSTR pszRootPath, LONGLONG& total, LONGLONG& unused)
+{
+	ULARGE_INTEGER uavailable;
+	ULARGE_INTEGER utotal;
+	ULARGE_INTEGER ufree;
+	uavailable.QuadPart= 0;
+	utotal.QuadPart= 0;
+	ufree.QuadPart= 0;
+
+	// On NT 4.0, the 2nd Parameter to this function must NOT be NULL.
+	BOOL b= GetDiskFreeSpaceEx(pszRootPath, &uavailable, &utotal, &ufree);
+	if (!b)
+		TRACE(_T("GetDiskFreeSpaceEx(%s) failed.\n"), pszRootPath);
+	
+	total= (LONGLONG)utotal.QuadPart; // will fail, when more than 2^63 Bytes free ....
+	unused= (LONGLONG)ufree.QuadPart;
+
+	ASSERT(unused <= total);
 }
 
 CString GetFolderNameFromPath(LPCTSTR path)
 {
-	CString s = path;
-	int i = s.ReverseFind(chrBackslash);
-	if(i < 0)
-	{
+	CString s= path;
+	int i= s.ReverseFind(_T('\\'));
+	if (i < 0)
 		return s;
-	}
 	return s.Left(i);
 }
 
@@ -420,13 +399,13 @@ CString GetCOMSPEC()
 {
 	CString cmd;
 
-	DWORD dw = GetEnvironmentVariable(TEXT("COMSPEC"), cmd.GetBuffer(_MAX_PATH), _MAX_PATH);
+	DWORD dw= GetEnvironmentVariable(_T("COMSPEC"), cmd.GetBuffer(_MAX_PATH), _MAX_PATH);
 	cmd.ReleaseBuffer();
 
-	if(dw == 0)
+	if (dw == 0)
 	{
-		TRACE(TEXT("COMSPEC not set.\n"));
-		cmd = TEXT("cmd.exe");
+		TRACE(_T("COMSPEC not set.\n"));
+		cmd= _T("cmd.exe");
 	}
 	return cmd;
 }
@@ -435,21 +414,21 @@ void WaitForHandleWithRepainting(HANDLE h)
 { 
 	// Code derived from MSDN sample "Waiting in a Message Loop".
 
-	while(true)
+	while (true)
 	{
 		// Read all of the messages in this next loop, removing each message as we read it.
 		MSG msg; 
-		while(PeekMessage(&msg, NULL, WM_PAINT, WM_PAINT, PM_REMOVE)) 
+		while (PeekMessage(&msg, NULL, WM_PAINT, WM_PAINT, PM_REMOVE)) 
 		{ 
 			DispatchMessage(&msg);
 		}
 
 		// Wait for WM_PAINT message sent or posted to this queue 
 		// or for one of the passed handles be set to signaled.
-		DWORD r = MsgWaitForMultipleObjects(1, &h, FALSE, INFINITE, QS_PAINT);
+		DWORD r= MsgWaitForMultipleObjects(1, &h, FALSE, INFINITE, QS_PAINT);
 
 		// The result tells us the type of event we have.
-		if(r == WAIT_OBJECT_0 + 1)
+		if (r == WAIT_OBJECT_0 + 1)
 		{
 			// New messages have arrived. 
 			// Continue to the top of the always while loop to dispatch them and resume waiting.
@@ -466,8 +445,8 @@ void WaitForHandleWithRepainting(HANDLE h)
 bool FolderExists(LPCTSTR path)
 {
 	CFileFind finder;
-	BOOL b = finder.FindFile(path);
-	if(b)
+	BOOL b= finder.FindFile(path);
+	if (b)
 	{
 		finder.FindNextFile();
 		return finder.IsDirectory();
@@ -476,34 +455,31 @@ bool FolderExists(LPCTSTR path)
 	{
 		// Here we land, if path is an UNC drive. In this case we
 		// try another FindFile:
-		b = finder.FindFile(CString(path) + TEXT("\\*.*"));
-		return (b != false);
+		b= finder.FindFile(CString(path) + _T("\\*.*"));
+		if (b)
+			return true;
+
+		return false;
 	}
 }
 
 bool DriveExists(const CString& path)
 {
-	if(path.GetLength() != 3 || path[1] != chrColon || path[2] != chrBackslash)
-	{
+	if (path.GetLength() != 3 || path[1] != _T(':') || path[2] != _T('\\'))
 		return false;
-	}
 
-	CString letter = path.Left(1);
+	CString letter= path.Left(1);
 	letter.MakeLower();
-	int d = letter[0] - chrSmallA;
+	int d= letter[0] - _T('a');
 	
-	DWORD mask = 0x1 << d;
+	DWORD mask= 0x1 << d;
 
-	if((mask & GetLogicalDrives()) == 0)
-	{
+	if ((mask & GetLogicalDrives()) == 0)
 		return false;
-	}
 
 	CString dummy;
-	if(!GetVolumeName(path, dummy))
-	{
+	if (!GetVolumeName(path, dummy))
 		return false;
-	}
 
 	return true;
 }
@@ -511,10 +487,24 @@ bool DriveExists(const CString& path)
 CString GetUserName()
 {
 	CString s;
-	DWORD size = UNLEN + 1;
+	DWORD size= UNLEN + 1;
 	(void)GetUserName(s.GetBuffer(size), &size);
 	s.ReleaseBuffer();
 	return s;
+}
+
+bool IsHexDigit(int c)
+{
+	if (_istdigit((short)c))
+		return true;
+
+	if (_T('a') <= c && c <= _T('f'))
+		return true;
+
+	if (_T('A') <= c && c <= _T('F'))
+		return true;
+
+	return false;
 }
 
 // drive is a drive spec like C: or C:\ or C:\path (path is ignored).
@@ -546,28 +536,24 @@ CString MyQueryDosDevice(LPCTSTR drive)
 {
 	CString d = drive;
 
-	if(d.GetLength() < 2 || d[1] != chrColon)
-	{
-		return strEmpty;
-	}
+	if (d.GetLength() < 2 || d[1] != _T(':'))
+		return _T("");
 
 	d = d.Left(2);
 
 	CQueryDosDeviceApi api;
 	
-	if(!api.IsSupported())
-	{
-		return strEmpty;
-	}
+	if (!api.IsSupported())
+		return _T("");
 
 	CString info;
 	DWORD dw = api.QueryDosDevice(d, info.GetBuffer(512), 512);
 	info.ReleaseBuffer();
 
-	if(dw == 0)
+	if (dw == 0)
 	{
-		TRACE(TEXT("QueryDosDevice(%s) failed: %s\r\n"), d, MdGetWinErrorText(GetLastError()));
-		return strEmpty;
+		TRACE(_T("QueryDosDevice(%s) failed: %s\r\n"), d, MdGetWinerrorText(GetLastError()));
+		return _T("");
 	}
 
 	return info;
@@ -587,35 +573,35 @@ bool IsSUBSTedDrive(LPCTSTR drive)
 CString GetSpec_Bytes()
 {
 	static CString s;
-	CacheString(s, IDS_SPEC_BYTES, TEXT("Bytes"));
+	CacheString(s, IDS_SPEC_BYTES, _T("Bytes"));
 	return s;
 }
 
 CString GetSpec_KB()
 {
 	static CString s;
-	CacheString(s, IDS_SPEC_KB, TEXT("KB"));
+	CacheString(s, IDS_SPEC_KB, _T("KB"));
 	return s;
 }
 
 CString GetSpec_MB()
 {
 	static CString s;
-	CacheString(s, IDS_SPEC_MB, TEXT("MB"));
+	CacheString(s, IDS_SPEC_MB, _T("MB"));
 	return s;
 }
 
 CString GetSpec_GB()
 {
 	static CString s;
-	CacheString(s, IDS_SPEC_GB, TEXT("GB"));
+	CacheString(s, IDS_SPEC_GB, _T("GB"));
 	return s;
 }
 
 CString GetSpec_TB()
 {
 	static CString s;
-	CacheString(s, IDS_SPEC_TB, TEXT("TB"));
+	CacheString(s, IDS_SPEC_TB, _T("TB"));
 	return s;
 }
 
@@ -627,32 +613,18 @@ LPCITEMIDLIST SHGetPIDLFromPath(CString path)
 	USES_CONVERSION;
 
 	CComPtr<IShellFolder> pshf;
-	HRESULT hr = SHGetDesktopFolder(&pshf); 
-	MdThrowFailed(hr, TEXT("SHGetDesktopFolder"));
+	HRESULT hr= SHGetDesktopFolder(&pshf); 
+	MdThrowFailed(hr, _T("SHGetDesktopFolder"));
 
 	LPITEMIDLIST pidl;
-	hr = pshf->ParseDisplayName(NULL, NULL, const_cast<LPOLESTR>(T2CW(path)), NULL, &pidl, NULL);
-	MdThrowFailed(hr, TEXT("ParseDisplayName"));
+	hr= pshf->ParseDisplayName(NULL, NULL, const_cast<LPOLESTR>(T2CW(path)), NULL, &pidl, NULL);
+	MdThrowFailed(hr, _T("ParseDisplayName"));
 
 	return pidl;
 }
 */
 
 // $Log$
-// Revision 1.24  2006/07/04 23:37:39  assarbad
-// - Added my email address in the header, adjusted "Author" -> "Author(s)"
-// - Added CVS Log keyword to those files not having it
-// - Added the files which I forgot during last commit
-//
-// Revision 1.23  2006/07/04 22:49:20  assarbad
-// - Replaced CVS keyword "Date" by "Header" in the file headers
-//
-// Revision 1.22  2006/07/04 20:45:22  assarbad
-// - See changelog for the changes of todays previous check-ins as well as this one!
-//
-// Revision 1.21  2005/10/01 11:21:08  assarbad
-// *** empty log message ***
-//
 // Revision 1.20  2004/11/28 14:40:06  assarbad
 // - Extended CFileFindWDS to replace a global function
 // - Now packing/unpacking the file attributes. This even spares a call to find encrypted/compressed files.

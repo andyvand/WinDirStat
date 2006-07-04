@@ -1,8 +1,7 @@
-// windirstat.h - Main header for the windirstat application
+// windirstat.h	- Main header for the windirstat application
 //
 // WinDirStat - Directory Statistics
-// Copyright (C) 2003-2005 Bernhard Seifert
-// Copyright (C) 2004-2006 Oliver Schneider (assarbad.net)
+// Copyright (C) 2003-2004 Bernhard Seifert
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,10 +17,9 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
-// Author(s): - bseifert -> bseifert@users.sourceforge.net, bseifert@daccord.net
-//            - assarbad -> http://assarbad.net/en/contact
+// Author: bseifert@users.sourceforge.net, bseifert@daccord.net
 //
-// $Header$
+// Last modified: $Date$
 
 #pragma once
 
@@ -47,8 +45,6 @@ CMyImageList *GetMyImageList();
 CString GetAuthorEmail();
 CString GetWinDirStatHomepage();
 CString GetFeedbackEmail();
-
-#define MyGetDiskFreeSpace GetApp()->GetFreeSpaceApi()->GetDiskFreeSpace
 
 //
 // CDirstatApp. The MFC application object. 
@@ -87,7 +83,6 @@ public:
 	void RestartApplication();
 
 	CGetCompressedFileSizeApi *GetComprSizeApi();
-	CGetDiskFreeSpaceApi *GetFreeSpaceApi();
 
 protected:
 	CString FindResourceDllPathByLangid(LANGID& langid);
@@ -116,9 +111,8 @@ protected:
 	CMyImageList m_myImageList;				// Out central image list
 	CPsapi m_psapi;							// Dynamically linked psapi.dll (for RAM usage)
 	CGetCompressedFileSizeApi m_comprSize;	// Dynamically linked API GetCompressedFileSize()
-	CGetDiskFreeSpaceApi m_freeSpace;		// For compatibility with W95 first release!
-	ULONGLONG m_workingSet;					// Current working set (RAM usage)
-	ULONGLONG m_pageFaults;					// Page faults so far (unused)
+	LONGLONG m_workingSet;					// Current working set (RAM usage)
+	LONGLONG m_pageFaults;					// Page faults so far (unused)
 	DWORD m_lastPeriodicalRamUsageUpdate;	// Tick count
 	COLORREF m_altColor;					// Coloring of compressed items
 	COLORREF m_altEncryptionColor;			// Coloring of encrypted items
@@ -127,29 +121,12 @@ protected:
 	afx_msg void OnFileOpen();
 	afx_msg void OnHelpManual();
 	afx_msg void OnAppAbout();
+	afx_msg void OnUpdateHelpReportbug(CCmdUI *pCmdUI);
+	afx_msg void OnHelpReportbug();
 };
 
 
 // $Log$
-// Revision 1.18  2006/07/04 23:37:40  assarbad
-// - Added my email address in the header, adjusted "Author" -> "Author(s)"
-// - Added CVS Log keyword to those files not having it
-// - Added the files which I forgot during last commit
-//
-// Revision 1.17  2006/07/04 22:49:21  assarbad
-// - Replaced CVS keyword "Date" by "Header" in the file headers
-//
-// Revision 1.16  2006/07/04 22:07:29  assarbad
-// - Changed project options (no manifest for resource DLLs)
-// - Removed report bug dialog from all resource DLLs
-// - Removed report bug module from sources
-//
-// Revision 1.15  2006/07/04 20:45:23  assarbad
-// - See changelog for the changes of todays previous check-ins as well as this one!
-//
-// Revision 1.14  2005/10/01 11:21:08  assarbad
-// *** empty log message ***
-//
 // Revision 1.13  2004/12/19 10:52:39  bseifert
 // Minor fixes.
 //

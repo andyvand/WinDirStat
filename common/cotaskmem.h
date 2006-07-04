@@ -1,7 +1,7 @@
 // cotaskmem.h
 //
 // WinDirStat - Directory Statistics
-// Copyright (C) 2003-2005 Bernhard Seifert
+// Copyright (C) 2003-2004 Bernhard Seifert
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@
 //
 // 08.09.1998 - JR
 //
-// $Header$
+// Last modified: $Date$
 
 #ifndef _COTASKMEM_H
 #define _COTASKMEM_H
@@ -51,18 +51,18 @@ public:
 	//The assert on operator& usually indicates a bug.  If this is really
 	//what is needed, however, take the address of the p member explicitly.
 	T* operator&() 
-	{ _ASSERTE(NULL == p); return &p; }
+	{ _ASSERTE( p == NULL ); return &p; }
 	T operator->()
-	{ _ASSERTE(NULL != p); return p; }
-	T operator= ( T lp ) 
-	{ if(NULL != p) CoTaskMemFree(p); p = lp; return p;}
-	T operator= ( const CCoTaskMem<T>& lp ) // operator not allowed for CCoTaskMem 
+	{ _ASSERTE( p != NULL ); return p; }
+	T operator = ( T lp ) 
+	{ if( p != NULL ) CoTaskMemFree( p ); p = lp; return p;}
+	T operator=( const CCoTaskMem<T>& lp ) // operator not allowed for CCoTaskMem 
 	{ _ASSERTE( 0 ); return p;}
 
 #if _MSC_VER>1020
-	bool operator!() { return (NULL == p); }
+	bool operator!() { return (p == NULL); }
 #else
-	BOOL operator!() { return (NULL == p) ? TRUE : FALSE; }
+	BOOL operator!() { return (p == NULL) ? TRUE : FALSE; }
 #endif
 	
 	T p;
@@ -71,12 +71,6 @@ public:
 #endif
 
 // $Log$
-// Revision 1.5  2006/07/04 22:49:18  assarbad
-// - Replaced CVS keyword "Date" by "Header" in the file headers
-//
-// Revision 1.4  2006/07/04 20:45:16  assarbad
-// - See changelog for the changes of todays previous check-ins as well as this one!
-//
 // Revision 1.3  2004/11/05 16:53:05  assarbad
 // Added Date and History tag where appropriate.
 //

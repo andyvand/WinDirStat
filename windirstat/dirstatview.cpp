@@ -1,8 +1,7 @@
-// dirstatview.cpp - Implementation of CDirstatView
+// dirstatview.cpp : Implementation of CDirstatView
 //
 // WinDirStat - Directory Statistics
-// Copyright (C) 2003-2005 Bernhard Seifert
-// Copyright (C) 2004-2006 Oliver Schneider (assarbad.net)
+// Copyright (C) 2003-2004 Bernhard Seifert
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,17 +17,16 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
-// Author(s): - bseifert -> bseifert@users.sourceforge.net, bseifert@daccord.net
-//            - assarbad -> http://assarbad.net/en/contact
+// Author: bseifert@users.sourceforge.net, bseifert@daccord.net
 //
-// $Header$
+// Last modified: $Date$
 
 #include "stdafx.h"
 #include "windirstat.h"
 #include "dirstatdoc.h"
 #include "item.h"
 #include "mainframe.h"
-#include "dirstatview.h"
+#include ".\dirstatview.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -40,8 +38,8 @@ namespace
 }
 
 CMyTreeListControl::CMyTreeListControl(CDirstatView *dirstatView)
-	: CTreeListControl(20)
-	, m_dirstatView(dirstatView)
+: CTreeListControl(20)
+, m_dirstatView(dirstatView)
 {
 }
 
@@ -59,20 +57,18 @@ END_MESSAGE_MAP()
 
 void CMyTreeListControl::OnContextMenu(CWnd* /*pWnd*/, CPoint pt)
 {
-	int i = GetSelectedItem();
-	if(i == -1)
-	{
+	int i= GetSelectedItem();
+	if (i == -1)
 		return;
-	}
 
-	CTreeListItem *item = GetItem(i);
+	CTreeListItem *item= GetItem(i);
 
-	CRect rc = GetWholeSubitemRect(i, 0);
-	CRect rcTitle = item->GetTitleRect() + rc.TopLeft();
+	CRect rc= GetWholeSubitemRect(i, 0);
+	CRect rcTitle= item->GetTitleRect() + rc.TopLeft();
 
 	CMenu menu;
 	menu.LoadMenu(IDR_POPUPLIST);
-	CMenu *sub = menu.GetSubMenu(0);
+	CMenu *sub= menu.GetSubMenu(0);
 
 	PrepareDefaultMenu(sub, (CItem *)item);
 	GetMainFrame()->AppendUserDefinedCleanups(sub);
@@ -109,8 +105,8 @@ void CMyTreeListControl::OnContextMenu(CWnd* /*pWnd*/, CPoint pt)
 
 void CMyTreeListControl::OnItemDoubleClick(int i)
 {
-	const CItem *item = (const CItem *)GetItem(i);
-	if(item->GetType() == IT_FILE)
+	const CItem *item= (const CItem *)GetItem(i);
+	if (item->GetType() == IT_FILE)
 	{
 		GetDocument()->OpenItem(item);
 	}
@@ -122,7 +118,7 @@ void CMyTreeListControl::OnItemDoubleClick(int i)
 
 void CMyTreeListControl::PrepareDefaultMenu(CMenu *menu, const CItem *item)
 {
-	if(IsLeaf(item->GetType()))
+	if (IsLeaf(item->GetType()))
 	{
 		menu->DeleteMenu(0, MF_BYPOSITION);	// Remove "Expand/Collapse" item
 		menu->DeleteMenu(0, MF_BYPOSITION);	// Remove separator
@@ -131,7 +127,7 @@ void CMyTreeListControl::PrepareDefaultMenu(CMenu *menu, const CItem *item)
 	else
 	{
 		CString command = LoadString(item->IsExpanded() && item->HasChildren() ? IDS_COLLAPSE : IDS_EXPAND);
-		VERIFY(menu->ModifyMenu(ID_POPUP_TOGGLE, MF_BYCOMMAND | MF_STRING, ID_POPUP_TOGGLE, command));
+		VERIFY(menu->ModifyMenu(ID_POPUP_TOGGLE, MF_BYCOMMAND|MF_STRING, ID_POPUP_TOGGLE, command));
 		menu->SetDefaultItem(ID_POPUP_TOGGLE, false);
 	}
 }
@@ -144,11 +140,11 @@ void CMyTreeListControl::OnSetFocus(CWnd* pOldWnd)
 
 void CMyTreeListControl::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
-	if(nChar == VK_TAB)
+	if (nChar == VK_TAB)
 	{
 		GetMainFrame()->MoveFocus(LF_EXTENSIONLIST);
 	}
-	else if(nChar == VK_ESCAPE)
+	else if (nChar == VK_ESCAPE)
 	{
 		GetMainFrame()->MoveFocus(LF_NONE);
 	}
@@ -160,7 +156,7 @@ void CMyTreeListControl::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 IMPLEMENT_DYNCREATE(CDirstatView, CView)
 
 CDirstatView::CDirstatView()
-	: m_treeListControl(this)
+: m_treeListControl(this)
 {
 	m_treeListControl.SetSorting(COL_SUBTREETOTAL, false);
 }
@@ -171,33 +167,31 @@ CDirstatView::~CDirstatView()
 
 CString CDirstatView::GenerateReport()
 {
-	CString report = GetOptions()->GetReportPrefix() + TEXT("\r\n");
+	CString report= GetOptions()->GetReportPrefix() + _T("\r\n");
 
-	CItem *root = GetDocument()->GetSelection();
+	CItem *root= GetDocument()->GetSelection();
 	ASSERT(root != NULL);
 	ASSERT(root->IsVisible());
 
-	int r = m_treeListControl.FindTreeItem(root);
+	int r= m_treeListControl.FindTreeItem(root);
 	
-	for(
-		int i = r; 
+	for (
+		int i=r; 
 			i < m_treeListControl.GetItemCount() 
 			&& (i == r || m_treeListControl.GetItem(i)->GetIndent() > root->GetIndent());
 		i++
 	)
 	{
-		CItem *item = (CItem *)m_treeListControl.GetItem(i);
+		CItem *item= (CItem *)m_treeListControl.GetItem(i);
 		
-		if(item->GetType() == IT_MYCOMPUTER)
-		{
+		if (item->GetType() == IT_MYCOMPUTER)
 			continue;
-		}
 
-		report.AppendFormat(TEXT("%s %s\r\n"), PadWidthBlanks(FormatLongLongHuman(item->GetSize()), 11), item->GetReportPath());
+		report.AppendFormat(_T("%s %s\r\n"), PadWidthBlanks(FormatLongLongHuman(item->GetSize()), 11), item->GetReportPath());
 	}
 
-	report += TEXT("\r\n\r\n");
-	report += GetOptions()->GetReportSuffix();
+	report+= _T("\r\n\r\n");
+	report+= GetOptions()->GetReportSuffix();
 
 	return report;
 }
@@ -250,7 +244,7 @@ END_MESSAGE_MAP()
 void CDirstatView::OnSize(UINT nType, int cx, int cy)
 {
 	CView::OnSize(nType, cx, cy);
-	if(IsWindow(m_treeListControl.m_hWnd))
+	if (IsWindow(m_treeListControl.m_hWnd))
 	{
 		CRect rc(0, 0, cx, cy);
 		m_treeListControl.MoveWindow(rc);
@@ -259,13 +253,12 @@ void CDirstatView::OnSize(UINT nType, int cx, int cy)
 
 int CDirstatView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
-	if(CView::OnCreate(lpCreateStruct) == -1)
-	{
+	if (CView::OnCreate(lpCreateStruct) == -1)
 		return -1;
-	}
 
-	RECT rect = { 0, 0, 0, 0 };
-	VERIFY(m_treeListControl.CreateEx(LVS_EX_HEADERDRAGDROP, WS_CHILD | WS_VISIBLE | LVS_REPORT | LVS_SHOWSELALWAYS, rect, this, _nIdTreeListControl));
+	RECT rect= { 0, 0, 0, 0 };
+	VERIFY(m_treeListControl.CreateEx(0, WS_CHILD|WS_VISIBLE|LVS_REPORT|LVS_SHOWSELALWAYS, rect, this, _nIdTreeListControl));
+	m_treeListControl.AddExtendedStyle(LVS_EX_HEADERDRAGDROP);
 
 	m_treeListControl.ShowGrid(GetOptions()->IsListGrid());
 	m_treeListControl.ShowStripes(GetOptions()->IsListStripes());
@@ -308,19 +301,19 @@ void CDirstatView::OnLvnItemchanged(NMHDR *pNMHDR, LRESULT *pResult)
 {
 	LPNMLISTVIEW pNMLV = reinterpret_cast<LPNMLISTVIEW>(pNMHDR);
 
-	if((pNMLV->uChanged & LVIF_STATE) != 0)
+	if ((pNMLV->uChanged & LVIF_STATE) != 0)
 	{
-		if(pNMLV->iItem == -1)
+		if (pNMLV->iItem == -1)
 		{
 			ASSERT(false); // mal gucken
 		}
 		else
 		{
 			// This is not true (don't know why): ASSERT(m_treeListControl.GetItemState(pNMLV->iItem, LVIS_SELECTED) == pNMLV->uNewState);
-			bool selected = ((m_treeListControl.GetItemState(pNMLV->iItem, LVIS_SELECTED) & LVIS_SELECTED) != 0);
-			CItem *item = (CItem *)m_treeListControl.GetItem(pNMLV->iItem);
+			bool selected= ((m_treeListControl.GetItemState(pNMLV->iItem, LVIS_SELECTED) & LVIS_SELECTED) != 0);
+			CItem *item= (CItem *)m_treeListControl.GetItem(pNMLV->iItem);
 			ASSERT(item != NULL);
-			if(selected)
+			if (selected)
 			{
 				GetDocument()->SetSelection(item);
 				GetDocument()->UpdateAllViews(this, HINT_SELECTIONCHANGED);
@@ -336,51 +329,39 @@ void CDirstatView::OnUpdate(CView *pSender, LPARAM lHint, CObject *pHint)
 	switch (lHint)
 	{
 	case HINT_NEWROOT:
-		{
-			m_treeListControl.SetRootItem(GetDocument()->GetRootItem());
-			m_treeListControl.Sort();
-			m_treeListControl.RedrawItems(0, m_treeListControl.GetItemCount() - 1);
-		}
+		m_treeListControl.SetRootItem(GetDocument()->GetRootItem());
+		m_treeListControl.Sort();
+		m_treeListControl.RedrawItems(0, m_treeListControl.GetItemCount() - 1);
 		break;
 
 	case HINT_SELECTIONCHANGED:
-		{
-			m_treeListControl.SelectAndShowItem(GetDocument()->GetSelection(), false);
-		}
+		m_treeListControl.SelectAndShowItem(GetDocument()->GetSelection(), false);
 		break;
 
 	case HINT_SHOWNEWSELECTION:
-		{
-			m_treeListControl.SelectAndShowItem(GetDocument()->GetSelection(), true);
-		}
+		m_treeListControl.SelectAndShowItem(GetDocument()->GetSelection(), true);
 		break;
 
 	case HINT_REDRAWWINDOW:
-		{
-			m_treeListControl.RedrawWindow();
-		}
+		m_treeListControl.RedrawWindow();
 		break;
 
 	case HINT_ZOOMCHANGED:
-		{
-			CView::OnUpdate(pSender, lHint, pHint);
-		}
+		CView::OnUpdate(pSender, lHint, pHint);
 		break;
 
 	case HINT_LISTSTYLECHANGED:
-		{
-			m_treeListControl.ShowGrid(GetOptions()->IsListGrid());
-			m_treeListControl.ShowStripes(GetOptions()->IsListStripes());
-			m_treeListControl.ShowFullRowSelection(GetOptions()->IsListFullRowSelection());
-		}
+		m_treeListControl.ShowGrid(GetOptions()->IsListGrid());
+		m_treeListControl.ShowStripes(GetOptions()->IsListStripes());
+		m_treeListControl.ShowFullRowSelection(GetOptions()->IsListFullRowSelection());
 		break;
 
 	case HINT_SOMEWORKDONE:
 		{
 			MSG msg;
-			while(PeekMessage(&msg, m_treeListControl, WM_MOUSEFIRST, WM_MOUSELAST, PM_REMOVE))
+			while (PeekMessage(&msg, m_treeListControl, WM_MOUSEFIRST, WM_MOUSELAST, PM_REMOVE))
 			{
-				if(msg.message == WM_QUIT)
+				if (msg.message == WM_QUIT)
 				{
 					PostQuitMessage(msg.wParam);
 					break;
@@ -391,14 +372,12 @@ void CDirstatView::OnUpdate(CView *pSender, LPARAM lHint, CObject *pHint)
 		}
 		// fall thru
 	case 0:
-		{
-			m_treeListControl.Sort();
+		m_treeListControl.Sort();
+		
+		// I decided (from 1.0.1 to 1.0.2) that this is not so good:
+		// m_treeListControl.EnsureItemVisible(GetDocument()->GetSelection());
 
-			// I decided (from 1.0.1 to 1.0.2) that this is not so good:
-			// m_treeListControl.EnsureItemVisible(GetDocument()->GetSelection());
-
-			CView::OnUpdate(pSender, lHint, pHint);
-		}
+		CView::OnUpdate(pSender, lHint, pHint);
 		break;
 
 	default:
@@ -416,6 +395,8 @@ void CDirstatView::OnPopupToggle()
 	m_treeListControl.ToggleSelectedItem();
 }
 
+
+
 #ifdef _DEBUG
 void CDirstatView::AssertValid() const
 {
@@ -429,18 +410,10 @@ void CDirstatView::Dump(CDumpContext& dc) const
 
 #endif //_DEBUG
 
+
+
+
 // $Log$
-// Revision 1.16  2006/07/04 23:37:39  assarbad
-// - Added my email address in the header, adjusted "Author" -> "Author(s)"
-// - Added CVS Log keyword to those files not having it
-// - Added the files which I forgot during last commit
-//
-// Revision 1.15  2006/07/04 22:49:20  assarbad
-// - Replaced CVS keyword "Date" by "Header" in the file headers
-//
-// Revision 1.14  2006/07/04 20:45:22  assarbad
-// - See changelog for the changes of todays previous check-ins as well as this one!
-//
 // Revision 1.13  2004/11/25 21:13:38  assarbad
 // - Implemented "attributes" column in the treelist
 // - Adopted width in German dialog

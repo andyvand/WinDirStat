@@ -1,8 +1,7 @@
-// globalhelpers.h - Declaration of global helper functions
+// globalhelpers.h	- Declaration of global helper functions
 //
 // WinDirStat - Directory Statistics
-// Copyright (C) 2003-2005 Bernhard Seifert
-// Copyright (C) 2004-2006 Oliver Schneider (assarbad.net)
+// Copyright (C) 2003-2004 Bernhard Seifert
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,21 +17,20 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
-// Author(s): - bseifert -> bseifert@users.sourceforge.net, bseifert@daccord.net
-//            - assarbad -> http://assarbad.net/en/contact
+// Author: bseifert@users.sourceforge.net, bseifert@daccord.net
 //
-// $Header$
+// Last modified: $Date$
 
 #pragma once
-#include "../common/wds_constants.h"
+
 
 CString GetLocaleString(LCTYPE lctype, LANGID langid);
 CString GetLocaleLanguage(LANGID langid);
 CString GetLocaleThousandSeparator();
 CString GetLocaleDecimalSeparator();
-CString FormatBytes(ULONGLONG n);
-CString FormatLongLongHuman(ULONGLONG n);
-CString FormatCount(ULONGLONG n);
+CString FormatBytes(LONGLONG n);
+CString FormatLongLongHuman(LONGLONG n);
+CString FormatCount(LONGLONG n);
 CString FormatDouble(double d);
 CString PadWidthBlanks(CString n, int width);
 CString FormatFileTime(const FILETIME& t);
@@ -45,12 +43,14 @@ bool GetVolumeName(LPCTSTR rootPath, CString& volumeName);
 CString FormatVolumeNameOfRootPath(CString rootPath);
 CString FormatVolumeName(CString rootPath, CString volumeName);
 CString PathFromVolumeName(CString name);
+void MyGetDiskFreeSpace(LPCTSTR pszRootPath, LONGLONG& total, LONGLONG& unused);
 CString GetFolderNameFromPath(LPCTSTR path);
 CString GetCOMSPEC();
 void WaitForHandleWithRepainting(HANDLE h);
 bool FolderExists(LPCTSTR path);
 bool DriveExists(const CString& path);
 CString GetUserName();
+bool IsHexDigit(int c);
 CString MyQueryDosDevice(LPCTSTR drive);
 bool IsSUBSTedDrive(LPCTSTR drive);
 CString GetSpec_Bytes();
@@ -60,20 +60,6 @@ CString GetSpec_GB();
 CString GetSpec_TB();
 
 // $Log$
-// Revision 1.19  2006/07/04 23:37:39  assarbad
-// - Added my email address in the header, adjusted "Author" -> "Author(s)"
-// - Added CVS Log keyword to those files not having it
-// - Added the files which I forgot during last commit
-//
-// Revision 1.18  2006/07/04 22:49:20  assarbad
-// - Replaced CVS keyword "Date" by "Header" in the file headers
-//
-// Revision 1.17  2006/07/04 20:45:22  assarbad
-// - See changelog for the changes of todays previous check-ins as well as this one!
-//
-// Revision 1.16  2005/10/01 11:21:08  assarbad
-// *** empty log message ***
-//
 // Revision 1.15  2004/11/28 14:40:06  assarbad
 // - Extended CFileFindWDS to replace a global function
 // - Now packing/unpacking the file attributes. This even spares a call to find encrypted/compressed files.

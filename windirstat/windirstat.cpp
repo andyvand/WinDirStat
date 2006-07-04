@@ -1,8 +1,7 @@
-// windirstat.cpp - Implementation of CDirstatApp and some globals
+// windirstat.cpp	- Implementation of CDirstatApp and some globals
 //
 // WinDirStat - Directory Statistics
 // Copyright (C) 2003-2005 Bernhard Seifert
-// Copyright (C) 2004-2006 Oliver Schneider (assarbad.net)
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,16 +17,17 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
-// Author(s): - bseifert -> bseifert@users.sourceforge.net, bseifert@daccord.net
-//            - assarbad -> http://assarbad.net/en/contact
+// Author: bseifert@users.sourceforge.net, bseifert@daccord.net
 //
-// $Header$
+// Last modified: $Date$
 
 #include "stdafx.h"
 #include "windirstat.h"
 #include "mainframe.h"
 #include "selectdrivesdlg.h"
 #include "aboutdlg.h"
+#include "reportbugdlg.h"
+#include "modalsendmail.h"
 #include "dirstatdoc.h"
 #include "graphview.h"
 
@@ -50,17 +50,17 @@ CDirstatApp *GetApp()
 
 CString GetAuthorEmail()
 {
-	return TEXT("bseifert@users.sourceforge.net");
+	return _T("bseifert@users.sourceforge.net");
 }
 
 CString GetWinDirStatHomepage()
 {
-	return TEXT("windirstat.sourceforge.net");
+	return _T("windirstat.sourceforge.net");
 }
 
 CString GetFeedbackEmail()
 {
-	return TEXT("windirstat-feedback@lists.sourceforge.net");
+	return _T("windirstat-feedback@lists.sourceforge.net");
 }
 
 CMyImageList *GetMyImageList()
@@ -75,6 +75,8 @@ BEGIN_MESSAGE_MAP(CDirstatApp, CWinApp)
 	ON_COMMAND(ID_APP_ABOUT, OnAppAbout)
 	ON_COMMAND(ID_FILE_OPEN, OnFileOpen)
 	ON_COMMAND(ID_HELP_MANUAL, OnHelpManual)
+	ON_UPDATE_COMMAND_UI(ID_HELP_REPORTBUG, OnUpdateHelpReportbug)
+	ON_COMMAND(ID_HELP_REPORTBUG, OnHelpReportbug)
 END_MESSAGE_MAP()
 
 
@@ -82,15 +84,15 @@ CDirstatApp _theApp;
 
 CDirstatApp::CDirstatApp()
 {
-	m_workingSet = 0;
-	m_pageFaults = 0;
-	m_lastPeriodicalRamUsageUpdate = GetTickCount();
-	m_altEncryptionColor = GetAlternativeColor(RGB(0x00, 0x80, 0x00), TEXT("AltEncryptionColor"));
-	m_altColor = GetAlternativeColor(RGB(0x00, 0x00, 0xFF), TEXT("AltColor"));
+	m_workingSet= 0;
+	m_pageFaults= 0;
+	m_lastPeriodicalRamUsageUpdate= GetTickCount();
+	m_altEncryptionColor=	GetAlternativeColor(RGB(0x00, 0x80, 0x00), _T("AltEncryptionColor"));
+	m_altColor=				GetAlternativeColor(RGB(0x00, 0x00, 0xFF), _T("AltColor"));
 
-#ifdef _DEBUG
-	TestScanResourceDllName();
-#endif
+	#ifdef _DEBUG
+		TestScanResourceDllName();
+	#endif
 }
 
 CMyImageList *CDirstatApp::GetMyImageList()
@@ -106,47 +108,41 @@ void CDirstatApp::UpdateRamUsage()
 
 void CDirstatApp::PeriodicalUpdateRamUsage()
 {
-	if(GetTickCount() - m_lastPeriodicalRamUsageUpdate > 1200)
+	if (GetTickCount() - m_lastPeriodicalRamUsageUpdate > 1200)
 	{
 		UpdateRamUsage();
-		m_lastPeriodicalRamUsageUpdate = GetTickCount();
+		m_lastPeriodicalRamUsageUpdate= GetTickCount();
 	}
 }
 
 CString CDirstatApp::FindResourceDllPathByLangid(LANGID& langid)
 {
-	return FindAuxiliaryFileByLangid(TEXT("wdsr"), TEXT(".dll"), langid, true);
+	return FindAuxiliaryFileByLangid(_T("wdsr"), _T(".dll"), langid, true);
 }
 
 CString CDirstatApp::FindHelpfilePathByLangid(LANGID langid)
 {
 	CString s;
-	if(langid == GetBuiltInLanguage())
+	if (langid == GetBuiltInLanguage())
 	{
 		// The english help file is named windirstat.chm.
-		s = GetAppFolder() + TEXT("\\windirstat.chm");
-		if(FileExists(s))
-		{
+		s= GetAppFolder() + _T("\\windirstat.chm");
+		if (FileExists(s))
 			return s;
-		}
 	}
 
 	// Help files for other languages are named wdshxxxx.chm (xxxx = LANGID).
-	s = FindAuxiliaryFileByLangid(TEXT("wdsh"), TEXT(".chm"), langid, false);
-	if(!s.IsEmpty())
-	{
+	s= FindAuxiliaryFileByLangid(_T("wdsh"), _T(".chm"), langid, false);
+	if (!s.IsEmpty())
 		return s;
-	}
 
 	// Else, try windirstat.chm again.
-	s = GetAppFolder() + TEXT("\\windirstat.chm");
-	if(FileExists(s))
-	{
+	s= GetAppFolder() + _T("\\windirstat.chm");
+	if (FileExists(s))
 		return s;
-	}
 
 	// Not found.
-	return strEmpty;
+	return _T("");
 }
 
 void CDirstatApp::GetAvailableResourceDllLangids(CArray<LANGID, LANGID>& arr)
@@ -154,20 +150,16 @@ void CDirstatApp::GetAvailableResourceDllLangids(CArray<LANGID, LANGID>& arr)
 	arr.RemoveAll();
 
 	CFileFind finder;
-	BOOL b = finder.FindFile(GetAppFolder() + TEXT("\\wdsr*.dll"));
-	while(b)
+	BOOL b= finder.FindFile(GetAppFolder() + _T("\\wdsr*.dll"));
+	while (b)
 	{
-		b = finder.FindNextFile();
-		if(finder.IsDirectory())
-		{
+		b= finder.FindNextFile();
+		if (finder.IsDirectory())
 			continue;
-		}
 
 		LANGID langid;
-		if(ScanResourceDllName(finder.GetFileName(), langid) && IsCorrectResourceDll(finder.GetFilePath()))
-		{
+		if (ScanResourceDllName(finder.GetFileName(), langid) && IsCorrectResourceDll(finder.GetFilePath()))
 			arr.Add(langid);
-		}
 	}
 }
 
@@ -176,16 +168,16 @@ void CDirstatApp::RestartApplication()
 	// First, try to create the suspended process
 	STARTUPINFO si;
 	ZeroMemory(&si, sizeof(si));
-	si.cb = sizeof(si);
+	si.cb= sizeof(si);
 
 	PROCESS_INFORMATION pi;
 	ZeroMemory(&pi, sizeof(pi));
 
 	BOOL success = CreateProcess(GetAppFileName(), NULL, NULL, NULL, false, CREATE_SUSPENDED, NULL, NULL, &si, &pi);
-	if(!success)
+	if (!success)
 	{
 		CString s;
-		s.FormatMessage(IDS_CREATEPROCESSsFAILEDs, GetAppFileName(), MdGetWinErrorText(GetLastError()));
+		s.FormatMessage(IDS_CREATEPROCESSsFAILEDs, GetAppFileName(), MdGetWinerrorText(GetLastError()));
 		AfxMessageBox(s);
 		return;
 	}
@@ -195,11 +187,9 @@ void CDirstatApp::RestartApplication()
 	// This will post a WM_QUIT message.
 	GetMainFrame()->SendMessage(WM_CLOSE);
 
-	DWORD dw = ::ResumeThread(pi.hThread);
-	if(dw != 1)
-	{
-		TRACE(TEXT("ResumeThread() didn't return 1\r\n"));
-	}
+	DWORD dw= ::ResumeThread(pi.hThread);
+	if (dw != 1)
+		TRACE(_T("ResumeThread() didn't return 1\r\n"));
 
 	CloseHandle(pi.hProcess);
 	CloseHandle(pi.hThread);
@@ -207,45 +197,35 @@ void CDirstatApp::RestartApplication()
 
 bool CDirstatApp::ScanResourceDllName(LPCTSTR name, LANGID& langid)
 {
-	return ScanAuxiliaryFileName(TEXT("wdsr"), TEXT(".dll"), name, langid);
+	return ScanAuxiliaryFileName(_T("wdsr"), _T(".dll"), name, langid);
 }
 
 bool CDirstatApp::ScanAuxiliaryFileName(LPCTSTR prefix, LPCTSTR suffix, LPCTSTR name, LANGID& langid)
 {
-	ASSERT(_tcslen(prefix) == 4);	// "wdsr" or "wdsh"
-	ASSERT(_tcslen(suffix) == 4);	// ".dll" or ".chm"
+	ASSERT(lstrlen(prefix) == 4);	// "wdsr" or "wdsh"
+	ASSERT(lstrlen(suffix) == 4);	// ".dll" or ".chm"
 
-	CString s = name;	// "wdsr0a01.dll"
+	CString s= name;	// "wdsr0a01.dll"
 	s.MakeLower();
-	if(s.Left(4) != prefix)
-	{
+	if (s.Left(4) != prefix)
 		return false;
-	}
-	s = s.Mid(4);		// "0a01.dll"
+	s= s.Mid(4);		// "0a01.dll"
 
-	if(s.GetLength() != 8)
-	{
+	if (s.GetLength() != 8)
 		return false;
-	}
 
-	if(s.Mid(4) != suffix)
-	{
+	if (s.Mid(4) != suffix)
 		return false;
-	}
 
-	s = s.Left(4);		// "0a01"
+	s= s.Left(4);		// "0a01"
 
-	for(int i = 0; i < 4; i++)
-	{
-		if(!_istxdigit(s[i]))
-		{
+	for (int i=0; i < 4; i++)
+		if (!IsHexDigit(s[i]))
 			return false;
-		}
-	}
 
 	int id;
-	VERIFY(1 == _stscanf_s(s, TEXT("%04x"), &id));
-	langid = (LANGID)id;
+	VERIFY(1 == _stscanf(s, _T("%04x"), &id));
+	langid= (LANGID)id;
 
 	return true;
 }
@@ -254,59 +234,53 @@ bool CDirstatApp::ScanAuxiliaryFileName(LPCTSTR prefix, LPCTSTR suffix, LPCTSTR 
 	void CDirstatApp::TestScanResourceDllName()
 	{
 		LANGID id;
-		ASSERT(!ScanResourceDllName(strEmpty, id));
-		ASSERT(!ScanResourceDllName(TEXT("wdsr.dll"), id));
-		ASSERT(!ScanResourceDllName(TEXT("wdsr123.dll"), id));
-		ASSERT(!ScanResourceDllName(TEXT("wdsr12345.dll"), id));
-		ASSERT(!ScanResourceDllName(TEXT("wdsr1234.exe"), id));
-		ASSERT(ScanResourceDllName(TEXT("wdsr0123.dll"), id));
-		ASSERT(id == 0x0123);
-		ASSERT(ScanResourceDllName(TEXT("WDsRa13F.dll"), id));
-		ASSERT(id == 0xa13f);
+		ASSERT(!ScanResourceDllName(_T(""), id));
+		ASSERT(!ScanResourceDllName(_T("wdsr.dll"), id));
+		ASSERT(!ScanResourceDllName(_T("wdsr123.dll"), id));
+		ASSERT(!ScanResourceDllName(_T("wdsr12345.dll"), id));
+		ASSERT(!ScanResourceDllName(_T("wdsr1234.exe"), id));
+		ASSERT(ScanResourceDllName(_T("wdsr0123.dll"), id));
+			ASSERT(id == 0x0123);
+		ASSERT(ScanResourceDllName(_T("WDsRa13F.dll"), id));
+			ASSERT(id == 0xa13f);
 	}
 #endif
 
 CString CDirstatApp::FindAuxiliaryFileByLangid(LPCTSTR prefix, LPCTSTR suffix, LANGID& langid, bool checkResource)
 {
 	CString number;
-	number.Format(TEXT("%04x"), langid);
+	number.Format(_T("%04x"), langid);
 
 	CString exactName;
-	exactName.Format(TEXT("%s%s%s"), prefix, number, suffix);
+	exactName.Format(_T("%s%s%s"), prefix, number, suffix);
 
-	CString exactPath = GetAppFolder() + TEXT("\\") + exactName;
-	if(FileExists(exactPath) && (!checkResource || IsCorrectResourceDll(exactPath)))
-	{
+	CString exactPath= GetAppFolder() + _T("\\") + exactName;
+	if (FileExists(exactPath) && (!checkResource || IsCorrectResourceDll(exactPath)))
 		return exactPath;
-	}
 
 	CString search;
-	search.Format(TEXT("%s*%s"), prefix, suffix);
+	search.Format(_T("%s*%s"), prefix, suffix);
 
 	CFileFind finder;
-	BOOL b = finder.FindFile(GetAppFolder() + TEXT("\\") + search);
-	while(b)
+	BOOL b= finder.FindFile(GetAppFolder() + _T("\\") + search);
+	while (b)
 	{
-		b = finder.FindNextFile();
-		if(finder.IsDirectory())
-		{
+		b= finder.FindNextFile();
+		if (finder.IsDirectory())
 			continue;
-		}
 
 		LANGID id;
-		if(!ScanAuxiliaryFileName(prefix, suffix, finder.GetFileName(), id))
-		{
+		if (!ScanAuxiliaryFileName(prefix, suffix, finder.GetFileName(), id))
 			continue;
-		}
 
-		if(PRIMARYLANGID(id) == PRIMARYLANGID(langid) && (!checkResource || IsCorrectResourceDll(finder.GetFilePath())))
+		if (PRIMARYLANGID(id) == PRIMARYLANGID(langid) && (!checkResource || IsCorrectResourceDll(finder.GetFilePath())))
 		{
-			langid = id;
+			langid= id;
 			return finder.GetFilePath();
 		}
 	}
 
-	return strEmpty;
+	return _T("");
 }
 
 CString CDirstatApp::ConstructHelpFileName()
@@ -317,10 +291,8 @@ CString CDirstatApp::ConstructHelpFileName()
 bool CDirstatApp::IsCorrectResourceDll(LPCTSTR path)
 {
 	HMODULE module = LoadLibrary(path);
-	if(module == NULL)
-	{
+	if (module == NULL)
 		return false;
-	}
 
 	CString reference = LoadString(IDS_RESOURCEVERSION);
 	
@@ -331,10 +303,8 @@ bool CDirstatApp::IsCorrectResourceDll(LPCTSTR path)
 
 	FreeLibrary(module);
 
-	if(r == 0 || s != reference)
-	{
+	if (r == 0 || s != reference)
 		return false;
-	}
 
 	return true;
 }
@@ -359,13 +329,14 @@ bool CDirstatApp::IsJunctionPoint(CString path)
 // or the default color values.
 COLORREF CDirstatApp::GetAlternativeColor(COLORREF clrDefault, LPCTSTR which)
 {
+	const LPCTSTR explorerKey = _T("Software\\Microsoft\\Windows\\CurrentVersion\\Explorer");
 	COLORREF x; DWORD cbValue = sizeof(x); CRegKey key;
 
 	// Open the explorer key
-	key.Open(HKEY_CURRENT_USER, strExplorerKey, KEY_READ);
+	key.Open(HKEY_CURRENT_USER, explorerKey, KEY_READ);
 
 	// Try to read the REG_BINARY value
-	if(ERROR_SUCCESS == key.QueryBinaryValue(which, &x, &cbValue))
+	if (ERROR_SUCCESS == key.QueryBinaryValue(which, &x, &cbValue))
 	{
 		// Return the read value upon success
 		return x;
@@ -393,12 +364,10 @@ CString CDirstatApp::GetCurrentProcessMemoryInfo()
 {
 	UpdateMemoryInfo();
 
-	if(m_workingSet == 0)
-	{
-		return strEmpty;
-	}
+	if (m_workingSet == 0)
+		return _T("");
 
-	CString n = PadWidthBlanks(FormatBytes(m_workingSet), 11);
+	CString n= PadWidthBlanks(FormatBytes(m_workingSet), 11);
 
 	CString s;
 	s.FormatMessage(IDS_RAMUSAGEs, n);
@@ -411,36 +380,25 @@ CGetCompressedFileSizeApi *CDirstatApp::GetComprSizeApi()
 	return &m_comprSize;
 }
 
-CGetDiskFreeSpaceApi *CDirstatApp::GetFreeSpaceApi()
-{
-	return &m_freeSpace;
-}
-
 bool CDirstatApp::UpdateMemoryInfo()
 {
-	if(!m_psapi.IsSupported())
-	{
+	if (!m_psapi.IsSupported())
 		return false;
-	}
 
 	PROCESS_MEMORY_COUNTERS pmc;
 	ZeroMemory(&pmc, sizeof(pmc));
-	pmc.cb = sizeof(pmc);
+	pmc.cb= sizeof(pmc);
 
-	if(!m_psapi.GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc)))
-	{
+	if (!m_psapi.GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc)))
 		return false;
-	}
 
-	m_workingSet = pmc.WorkingSetSize;
+	m_workingSet= pmc.WorkingSetSize;
 
-	bool ret = false;
-	if(pmc.PageFaultCount > m_pageFaults + 500)
-	{
-		ret = true;
-	}
+	bool ret= false;
+	if (pmc.PageFaultCount > m_pageFaults + 500)
+		ret= true;
 
-	m_pageFaults = pmc.PageFaultCount;
+	m_pageFaults= pmc.PageFaultCount;
 
 	return ret;
 }
@@ -461,20 +419,20 @@ BOOL CDirstatApp::InitInstance()
 	VERIFY(AfxInitRichEdit2());		// On NT, this helps.
 	EnableHtmlHelp();
 
-	SetRegistryKey(TEXT("Seifert"));
+	SetRegistryKey(_T("Seifert"));
 	LoadStdProfileSettings(4);
 
-	m_langid = GetBuiltInLanguage(); 
+	m_langid= GetBuiltInLanguage(); 
 
 	LANGID langid = CLanguageOptions::GetLanguage();
-	if(langid != GetBuiltInLanguage())
+	if (langid != GetBuiltInLanguage())
 	{
 		CString resourceDllPath = FindResourceDllPathByLangid(langid);
-		if(!resourceDllPath.IsEmpty())
+		if (!resourceDllPath.IsEmpty())
 		{
 			// Load language resource DLL
 			HINSTANCE dll = LoadLibrary(resourceDllPath);
-			if(dll != NULL)
+			if (dll != NULL)
 			{
 				// Set default module handle for loading of resources
 				AfxSetResourceHandle(dll);
@@ -482,7 +440,7 @@ BOOL CDirstatApp::InitInstance()
 			}
 			else
 			{
-				TRACE(TEXT("LoadLibrary(%s) failed: %u\r\n"), resourceDllPath, GetLastError());
+				TRACE(_T("LoadLibrary(%s) failed: %u\r\n"), resourceDllPath, GetLastError());
 			}
 		}
 		// else: We use our built-in English resources.
@@ -493,27 +451,23 @@ BOOL CDirstatApp::InitInstance()
 	GetOptions()->LoadFromRegistry();
 
 	free((void*)m_pszHelpFilePath);
-	m_pszHelpFilePath = _tcsdup(ConstructHelpFileName()); // ~CWinApp() will free this memory.
+	m_pszHelpFilePath=_tcsdup(ConstructHelpFileName()); // ~CWinApp() will free this memory.
 
 	m_pDocTemplate = new CSingleDocTemplate(
 		IDR_MAINFRAME,
 		RUNTIME_CLASS(CDirstatDoc),
 		RUNTIME_CLASS(CMainFrame),
 		RUNTIME_CLASS(CGraphView));
-	if(!m_pDocTemplate)
-	{
+	if (!m_pDocTemplate)
 		return FALSE;
-	}
 	AddDocTemplate(m_pDocTemplate);
 	
 	CCommandLineInfo cmdInfo;
 	ParseCommandLine(cmdInfo);
 
-	m_nCmdShow = SW_HIDE;
-	if(!ProcessShellCommand(cmdInfo))
-	{
+	m_nCmdShow= SW_HIDE;
+	if (!ProcessShellCommand(cmdInfo))
 		return FALSE;
-	}
 
 	GetMainFrame()->InitialShowWindow();
 	m_pMainWnd->UpdateWindow();
@@ -523,7 +477,7 @@ BOOL CDirstatApp::InitInstance()
 	m_pMainWnd->BringWindowToTop();
 	m_pMainWnd->SetForegroundWindow();
 
-	if(cmdInfo.m_nShellCommand != CCommandLineInfo::FileOpen)
+	if (cmdInfo.m_nShellCommand != CCommandLineInfo::FileOpen)
 	{
 		OnFileOpen();
 	}
@@ -543,14 +497,10 @@ LANGID CDirstatApp::GetLangid()
 
 LANGID CDirstatApp::GetEffectiveLangid()
 {
-	if(GetOptions()->IsUseWdsLocale())
-	{
+	if (GetOptions()->IsUseWdsLocale())
 		return GetLangid();
-	}
 	else
-	{
 		return GetUserDefaultLangID();
-	}
 }
 
 void CDirstatApp::OnAppAbout()
@@ -561,34 +511,28 @@ void CDirstatApp::OnAppAbout()
 void CDirstatApp::OnFileOpen()
 {
 	CSelectDrivesDlg dlg;
-	if(IDOK == dlg.DoModal())
+	if (IDOK == dlg.DoModal())
 	{
-		CString path = CDirstatDoc::EncodeSelection((RADIO)dlg.m_radio, dlg.m_folderName, dlg.m_drives);
+		CString path= CDirstatDoc::EncodeSelection((RADIO)dlg.m_radio, dlg.m_folderName, dlg.m_drives);
 		m_pDocTemplate->OpenDocumentFile(path, true);
 	}
 }
 
 BOOL CDirstatApp::OnIdle(LONG lCount)
 {
-	bool more = false;
+	bool more= false;
 
-	CDirstatDoc *doc = GetDocument();
-	if(doc != NULL && !doc->Work(600))
-	{
-		more = true;
-	}
+	CDirstatDoc *doc= GetDocument();
+	if (doc != NULL && !doc->Work(600))
+		more= true;
 
-	if(CWinApp::OnIdle(lCount))
-	{
-		more = true;
-	}
+	if (CWinApp::OnIdle(lCount))
+		more= true;
 	
 	// The status bar (RAM usage) is updated only when count == 0.
 	// That's why we call an extra OnIdle(0) here.
-	if(CWinThread::OnIdle(0))
-	{
-		more = true;
-	}
+	if (CWinThread::OnIdle(0))
+		more= true;
 	
 	return more;
 }
@@ -600,7 +544,7 @@ void CDirstatApp::OnHelpManual()
 
 void CDirstatApp::DoContextHelp(DWORD topic)
 {
-	if(FileExists(m_pszHelpFilePath))
+	if (FileExists(m_pszHelpFilePath))
 	{
 		// I want a NULL parent window. So I don't use CWinApp::HtmlHelp().
 		::HtmlHelp(NULL, m_pszHelpFilePath, HH_HELP_CONTEXT, topic);
@@ -608,31 +552,27 @@ void CDirstatApp::DoContextHelp(DWORD topic)
 	else
 	{
 		CString msg;
-		msg.FormatMessage(IDS_HELPFILEsCOULDNOTBEFOUND, TEXT("windirstat.chm"));
+		msg.FormatMessage(IDS_HELPFILEsCOULDNOTBEFOUND, _T("windirstat.chm"));
 		AfxMessageBox(msg);
 	}
 }
 
+void CDirstatApp::OnUpdateHelpReportbug(CCmdUI *pCmdUI)
+{
+	pCmdUI->Enable(CModalSendMail::IsSendMailAvailable());
+}
+
+void CDirstatApp::OnHelpReportbug()
+{
+	CReportBugDlg dlg;
+	if (IDOK == dlg.DoModal())
+	{
+		CModalSendMail msm;
+		msm.SendMail(dlg.m_recipient, dlg.m_subject, dlg.m_body);
+	}
+}
+
 // $Log$
-// Revision 1.21  2006/07/04 23:37:40  assarbad
-// - Added my email address in the header, adjusted "Author" -> "Author(s)"
-// - Added CVS Log keyword to those files not having it
-// - Added the files which I forgot during last commit
-//
-// Revision 1.20  2006/07/04 22:49:21  assarbad
-// - Replaced CVS keyword "Date" by "Header" in the file headers
-//
-// Revision 1.19  2006/07/04 22:07:29  assarbad
-// - Changed project options (no manifest for resource DLLs)
-// - Removed report bug dialog from all resource DLLs
-// - Removed report bug module from sources
-//
-// Revision 1.18  2006/07/04 20:45:23  assarbad
-// - See changelog for the changes of todays previous check-ins as well as this one!
-//
-// Revision 1.17  2005/10/01 11:21:08  assarbad
-// *** empty log message ***
-//
 // Revision 1.16  2005/04/17 12:27:21  assarbad
 // - For details see changelog of 2005-04-17
 //

@@ -23,6 +23,7 @@
 #define IDD_PAGE_TREELIST               142
 #define IDD_PAGE_TREEMAP                143
 #define IDD_PAGE_GENERAL                144
+#define IDD_REPORTBUG                   145
 #define IDD_PAGE_REPORT                 146
 #define IDS_RESOURCEVERSION             199
 #define IDS_ABOUT_ABOUTTEXTss           200
@@ -111,7 +112,6 @@
 #define IDR_TEXT2                       901
 #define IDB_BITMAP1                     902
 #define IDB_JUNCTIONPOINT               902
-#define IDD_CHECKFORUPDATE              903
 #define IDC_ALLDRIVES                   1000
 #define IDC_GROUPS                      1000
 #define IDC_ALLLOCALDRIVES              1000
@@ -122,11 +122,11 @@
 #define IDC_FOLDERNAME                  1003
 #define IDC_BROWSEFOLDER                1004
 #define IDC_DRIVES                      1005
+#define IDC_TEXT                        1012
 #define IDC_TAB                         1013
 #define IDC_CAPTION                     1014
 #define IDC_FILENAME                    1016
 #define IDC_DONTSHOWAGAIN               1017
-#define IDC_HANDCURSOR                  1017
 #define IDC_FOLLOWMOUNTPOINTS           1020
 #define IDC_PACMANANIMATION             1021
 #define IDC_FOLLOWJUNCTIONS             1021
@@ -159,7 +159,18 @@
 #define IDC_HINTSN                      1048
 #define IDC_UP                          1049
 #define IDC_DOWN                        1050
+#define IDC_FROM                        1050
+#define IDC_TO                          1051
 #define IDC_WORKSFORUNCPATHS            1051
+#define IDC_CRITICAL                    1052
+#define IDC_GRAVE                       1053
+#define IDC_NORMAL                      1054
+#define IDC_WISH                        1055
+#define IDC_INAWORD                     1056
+#define IDC_APPLICATION                 1057
+#define IDC_FEEDBACK                    1058
+#define IDC_PLATFORM                    1059
+#define IDC_HINT                        1060
 #define IDC_COLORBUTTON0                1100
 #define IDC_COLORBUTTON1                1101
 #define IDC_COLORBUTTON2                1102
@@ -172,6 +183,10 @@
 #define IDC_BUTTON8                     1201
 #define IDC_TREEMAPHIGHLIGHTCOLOR       1202
 #define IDC_COMBO                       1203
+#define IDC_STATIC_TO                   1204
+#define IDC_STATIC_PLATFORM             1205
+#define IDC_STATIC_SEVERITY             1206
+#define IDC_STATIC_OKHINT               1207
 #define IDC_SIZEGRIPPER                 1208
 #define IDC_SCALEFACTOR                 1209
 #define IDC_HEIGHT                      1210
@@ -190,9 +205,6 @@
 #define IDC_SUFFIX                      1223
 #define IDC_CHECK1                      1225
 #define IDC_USEWDSLOCALE                1225
-#define IDC_LIST1                       1226
-#define IDC_STATIC_URL                  1227
-#define IDC_STATIC_TEXT                 1228
 #define ID_FILE_OPENURL                 32771
 #define ID_FILE_OPENRECENT              32772
 #define ID_FILE_REFRESHALL              32773
@@ -256,16 +268,15 @@
 #define ID_CLEANUP_PROPERTIES           33019
 #define ID_BUTTON33021                  33021
 #define ID_POPUP_TOGGLE                 33023
-#define ID_HELP_CHECKFORUPDATES         33024
 #define ID_INDICATOR_MEMORYUSAGE        59142
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        905
-#define _APS_NEXT_COMMAND_VALUE         33025
-#define _APS_NEXT_CONTROL_VALUE         1229
+#define _APS_NEXT_RESOURCE_VALUE        903
+#define _APS_NEXT_COMMAND_VALUE         33024
+#define _APS_NEXT_CONTROL_VALUE         1226
 #define _APS_NEXT_SYMED_VALUE           104
 #endif
 #endif

@@ -1,8 +1,7 @@
-// PageReport.cpp - Implementation of CPageReport
+// PageReport.cpp	- Implementation of CPageReport
 //
 // WinDirStat - Directory Statistics
-// Copyright (C) 2003-2005 Bernhard Seifert
-// Copyright (C) 2004-2006 Oliver Schneider (assarbad.net)
+// Copyright (C) 2003-2004 Bernhard Seifert
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,14 +17,14 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
-// Author(s): - bseifert -> bseifert@users.sourceforge.net, bseifert@daccord.net
-//            - assarbad -> http://assarbad.net/en/contact
+// Author: bseifert@users.sourceforge.net, bseifert@daccord.net
 //
-// $Header$
+// Last modified: $Date$
 
 #include "stdafx.h"
 #include "windirstat.h"
 #include "PageReport.h"
+#include ".\pagereport.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -36,9 +35,9 @@ IMPLEMENT_DYNAMIC(CPageReport, CPropertyPage)
 
 CPageReport::CPageReport()
 	: CPropertyPage(CPageReport::IDD)
-	, m_subject(strEmpty)
-	, m_prefix(strEmpty)
-	, m_suffix(strEmpty)
+	, m_subject(_T(""))
+	, m_prefix(_T(""))
+	, m_suffix(_T(""))
 {
 }
 
@@ -69,9 +68,9 @@ BOOL CPageReport::OnInitDialog()
 {
 	CPropertyPage::OnInitDialog();
 
-	m_subject = GetOptions()->GetReportSubject();
-	m_prefix = GetOptions()->GetReportPrefix();
-	m_suffix = GetOptions()->GetReportSuffix();
+	m_subject= GetOptions()->GetReportSubject();
+	m_prefix= GetOptions()->GetReportPrefix();
+	m_suffix= GetOptions()->GetReportSuffix();
 
 	ValuesAltered();
 
@@ -81,7 +80,7 @@ BOOL CPageReport::OnInitDialog()
 
 void CPageReport::ValuesAltered(bool altered)
 {
-	m_altered = altered;
+	m_altered= altered;
 	CString s = LoadString(m_altered ? IDS_RESETTODEFAULTS : IDS_BACKTOUSERSETTINGS);
 	m_reset.SetWindowText(s);
 }
@@ -101,21 +100,21 @@ void CPageReport::OnBnClickedReset()
 {
 	UpdateData();
 
-	if(m_altered)
+	if (m_altered)
 	{
-		m_undoSubject = m_subject;
-		m_undoPrefix = m_prefix;
-		m_undoSuffix = m_suffix;
+		m_undoSubject= m_subject;
+		m_undoPrefix= m_prefix;
+		m_undoSuffix= m_suffix;
 
-		m_subject = GetOptions()->GetReportDefaultSubject();
-		m_prefix = GetOptions()->GetReportDefaultPrefix();
-		m_suffix = GetOptions()->GetReportDefaultSuffix();
+		m_subject= GetOptions()->GetReportDefaultSubject();
+		m_prefix= GetOptions()->GetReportDefaultPrefix();
+		m_suffix= GetOptions()->GetReportDefaultSuffix();
 	}
 	else
 	{
-		m_subject = m_undoSubject;
-		m_prefix = m_undoPrefix;
-		m_suffix = m_undoSuffix;
+		m_subject= m_undoSubject;
+		m_prefix= m_undoPrefix;
+		m_suffix= m_undoSuffix;
 	}
 
 	ValuesAltered(!m_altered);
@@ -142,17 +141,6 @@ void CPageReport::OnEnChangeSuffix()
 }
 
 // $Log$
-// Revision 1.8  2006/07/04 23:37:39  assarbad
-// - Added my email address in the header, adjusted "Author" -> "Author(s)"
-// - Added CVS Log keyword to those files not having it
-// - Added the files which I forgot during last commit
-//
-// Revision 1.7  2006/07/04 22:49:20  assarbad
-// - Replaced CVS keyword "Date" by "Header" in the file headers
-//
-// Revision 1.6  2006/07/04 20:45:22  assarbad
-// - See changelog for the changes of todays previous check-ins as well as this one!
-//
 // Revision 1.5  2004/11/13 08:17:07  bseifert
 // Remove blanks in Unicode Configuration names.
 //

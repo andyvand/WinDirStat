@@ -1,8 +1,7 @@
-// PageGeneral.cpp - Implementation of CPageGeneral
+// PageGeneral.cpp	- Implementation of CPageGeneral
 //
 // WinDirStat - Directory Statistics
-// Copyright (C) 2003-2005 Bernhard Seifert
-// Copyright (C) 2004-2006 Oliver Schneider (assarbad.net)
+// Copyright (C) 2003-2004 Bernhard Seifert
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,15 +17,14 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
-// Author(s): - bseifert -> bseifert@users.sourceforge.net, bseifert@daccord.net
-//            - assarbad -> http://assarbad.net/en/contact
+// Author: bseifert@users.sourceforge.net, bseifert@daccord.net
 //
-// $Header$
+// Last modified: $Date$
 
 #include "stdafx.h"
 #include "windirstat.h"
-#include "mainframe.h" // COptionsPropertySheet
-#include "PageGeneral.h"
+#include "mainframe.h"		// COptionsPropertySheet
+#include ".\pagegeneral.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -80,47 +78,46 @@ END_MESSAGE_MAP()
 
 BOOL CPageGeneral::OnInitDialog()
 {
-	int i = 0;
 	CPropertyPage::OnInitDialog();
 
-	m_humanFormat = GetOptions()->IsHumanFormat();
-	m_listGrid = GetOptions()->IsListGrid();
-	m_listStripes = GetOptions()->IsListStripes();
-	m_listFullRowSelection = GetOptions()->IsListFullRowSelection();
+	m_humanFormat= GetOptions()->IsHumanFormat();
+	m_listGrid= GetOptions()->IsListGrid();
+	m_listStripes= GetOptions()->IsListStripes();
+	m_listFullRowSelection= GetOptions()->IsListFullRowSelection();
 
-	m_followMountPoints = GetOptions()->IsFollowMountPoints();
-	m_followJunctionPoints = GetOptions()->IsFollowJunctionPoints();
-	m_useWdsLocale = GetOptions()->IsUseWdsLocale();
+	m_followMountPoints= GetOptions()->IsFollowMountPoints();
+	m_followJunctionPoints= GetOptions()->IsFollowJunctionPoints();
+	m_useWdsLocale= GetOptions()->IsUseWdsLocale();
 
 	CVolumeApi va;
-	if(!va.IsSupported())
+	if (!va.IsSupported())
 	{
-		m_followMountPoints = false;	// Otherwise we would see pacman only.
+		m_followMountPoints= false;	// Otherwise we would see pacman only.
 		m_ctlFollowMountPoints.ShowWindow(SW_HIDE); // Ignorance is bliss.
 		// The same for junction points
 		m_followJunctionPoints = false;	// Otherwise we would see pacman only.
 		m_ctlFollowJunctionPoints.ShowWindow(SW_HIDE); // Ignorance is bliss.
 	}
 
-	int k = m_combo.AddString(GetLocaleLanguage(GetApp()->GetBuiltInLanguage()));
+	int k= m_combo.AddString(GetLocaleLanguage(GetApp()->GetBuiltInLanguage()));
 	m_combo.SetItemData(k, GetApp()->GetBuiltInLanguage());
 
 	CArray<LANGID, LANGID> langid;
 	GetApp()->GetAvailableResourceDllLangids(langid);
 
-	for(i = 0; i < langid.GetSize(); i++)
+	for (int i=0; i < langid.GetSize(); i++)
 	{
-		k = m_combo.AddString(GetLocaleLanguage(langid[i]));
+		k= m_combo.AddString(GetLocaleLanguage(langid[i]));
 		m_combo.SetItemData(k, langid[i]);
 	}
 
-	m_originalLanguage = 0;
-	for(i = 0; i < m_combo.GetCount(); i++)
+	m_originalLanguage= 0;
+	for (i=0; i < m_combo.GetCount(); i++)
 	{
-		if(m_combo.GetItemData(i) == CLanguageOptions::GetLanguage())
+		if (m_combo.GetItemData(i) == CLanguageOptions::GetLanguage())
 		{
 			m_combo.SetCurSel(i);
-			m_originalLanguage = i;
+			m_originalLanguage= i;
 			break;
 		}
 	}
@@ -140,7 +137,7 @@ void CPageGeneral::OnOK()
 	GetOptions()->SetListStripes(m_listStripes);
 	GetOptions()->SetListFullRowSelection(m_listFullRowSelection);
 
-	LANGID id = (LANGID)m_combo.GetItemData(m_combo.GetCurSel());
+	LANGID id= (LANGID)m_combo.GetItemData(m_combo.GetCurSel());
 	CLanguageOptions::SetLanguage(id);
 
 	CPropertyPage::OnOK();
@@ -183,23 +180,12 @@ void CPageGeneral::OnBnClickedListFullRowSelection()
 
 void CPageGeneral::OnCbnSelendokCombo()
 {
-	int i = m_combo.GetCurSel();
+	int i= m_combo.GetCurSel();
 	GetSheet()->SetLanguageChanged(i != m_originalLanguage);
 	SetModified();
 }
 
 // $Log$
-// Revision 1.12  2006/07/04 23:37:39  assarbad
-// - Added my email address in the header, adjusted "Author" -> "Author(s)"
-// - Added CVS Log keyword to those files not having it
-// - Added the files which I forgot during last commit
-//
-// Revision 1.11  2006/07/04 22:49:20  assarbad
-// - Replaced CVS keyword "Date" by "Header" in the file headers
-//
-// Revision 1.10  2006/07/04 20:45:22  assarbad
-// - See changelog for the changes of todays previous check-ins as well as this one!
-//
 // Revision 1.9  2004/11/14 08:49:06  bseifert
 // Date/Time/Number formatting now uses User-Locale. New option to force old behavior.
 //

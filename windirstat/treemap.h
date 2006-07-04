@@ -1,8 +1,7 @@
-// treemap.h - Declaration of CColorSpace, CTreemap and CTreemapPreview
+// treemap.h	- Declaration of CColorSpace, CTreemap and CTreemapPreview
 //
 // WinDirStat - Directory Statistics
-// Copyright (C) 2003-2005 Bernhard Seifert
-// Copyright (C) 2004-2006 Oliver Schneider (assarbad.net)
+// Copyright (C) 2003-2004 Bernhard Seifert
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,12 +17,12 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
-// Author(s): - bseifert -> bseifert@users.sourceforge.net, bseifert@daccord.net
-//            - assarbad -> http://assarbad.net/en/contact
+// Author: bseifert@users.sourceforge.net, bseifert@daccord.net
 //
-// $Header$
+// Last modified: $Date$
 
-#pragma once
+#ifndef TREEMAP_H_INCLUDED
+#define TREEMAP_H_INCLUDED
 
 //
 // CColorSpace. Helper class for manipulating colors. Static members only.
@@ -81,7 +80,7 @@ public:
 		virtual     COLORREF TmiGetGraphColor()         const = 0;
 		virtual          int TmiGetChildrenCount()      const = 0;
 		virtual        Item *TmiGetChild(int c)         const = 0;
-		virtual     ULONGLONG TmiGetSize()               const = 0;
+		virtual     LONGLONG TmiGetSize()               const = 0;
 	};
 
 	//
@@ -165,10 +164,8 @@ public:
 	void SetOptions(const Options *options);
 	Options GetOptions();
 
-#ifdef _DEBUG
 	// DEBUG function
 	void RecurseCheckTree(Item *item);
-#endif // _DEBUG
 
 	// Create and draw a treemap
 	void DrawTreemap(CDC *pdc, CRect rc, Item *root, const Options *options =NULL);
@@ -264,22 +261,22 @@ class CTreemapPreview: public CStatic
 	public:
 		CItem(int size, COLORREF color)
 		{
-			m_size = size;
-			m_color = color;
+			m_size= size;
+			m_color= color;
 		}
 		CItem(const CArray<CItem *, CItem *>& children)
 		{
-			m_size = 0;
-			for(int i = 0; i < children.GetSize(); i++)
+			m_size= 0;
+			for (int i=0; i < children.GetSize(); i++)
 			{
 				m_children.Add(children[i]);
-				m_size += (int)children[i]->TmiGetSize();
+				m_size+= (int)children[i]->TmiGetSize();
 			}
 			qsort(m_children.GetData(), m_children.GetSize(), sizeof(CItem *), &_compareItems);
 		}
 		~CItem()
 		{
-			for(int i = 0; i < m_children.GetSize(); i++)
+			for (int i=0; i < m_children.GetSize(); i++)
 				delete m_children[i];
 		}
 		static int _compareItems(const void *p1, const void *p2)
@@ -295,7 +292,7 @@ class CTreemapPreview: public CStatic
 		virtual     COLORREF TmiGetGraphColor()         const	{ return m_color; }
 		virtual          int TmiGetChildrenCount()      const	{ return (int)m_children.GetSize(); }
 		virtual        Item *TmiGetChild(int c)         const	{ return m_children[c]; }
-		virtual     ULONGLONG TmiGetSize()               const	{ return m_size; }
+		virtual     LONGLONG TmiGetSize()               const	{ return m_size; }
 
 	private:
 		CArray<CItem *, CItem *> m_children;	// Our children
@@ -322,18 +319,9 @@ protected:
 	afx_msg void OnPaint();
 };
 
+#endif
+
 // $Log$
-// Revision 1.9  2006/07/04 23:37:40  assarbad
-// - Added my email address in the header, adjusted "Author" -> "Author(s)"
-// - Added CVS Log keyword to those files not having it
-// - Added the files which I forgot during last commit
-//
-// Revision 1.8  2006/07/04 22:49:21  assarbad
-// - Replaced CVS keyword "Date" by "Header" in the file headers
-//
-// Revision 1.7  2006/07/04 20:45:23  assarbad
-// - See changelog for the changes of todays previous check-ins as well as this one!
-//
 // Revision 1.6  2004/11/29 07:07:47  bseifert
 // Introduced SRECT. Saves 8 Bytes in sizeof(CItem). Formatting changes.
 //
