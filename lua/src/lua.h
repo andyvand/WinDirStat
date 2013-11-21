@@ -14,16 +14,13 @@
 
 
 #include "luaconf.h"
-#if defined(LUA_CORE) || defined(LUA_LIB) || defined(lua_c)
-# include "luaconf_internal.h"
-#endif
 
 
 #define LUA_VERSION	"Lua 5.1"
-#define LUA_RELEASE	"Lua 5.1.5"
+#define LUA_RELEASE	"Lua 5.1.4"
 #define LUA_VERSION_NUM	501
-#define LUA_COPYRIGHT	"Copyright (C) 1994-2012 Lua.org, PUC-Rio"
-#define LUA_AUTHORS 	"R. Ierusalimschy, L. H. de Figueiredo & W. Celes"
+#define LUA_COPYRIGHT	"Copyright (C) 1994-2008 Lua.org, PUC-Rio"
+#define LUA_AUTHORS	"R. Ierusalimschy, L. H. de Figueiredo & W. Celes"
 
 
 /* mark for precompiled code (`<esc>Lua') */
@@ -73,20 +70,6 @@ typedef void * (*lua_Alloc) (void *ud, void *ptr, size_t osize, size_t nsize);
 ** basic types
 */
 #define LUA_TNONE		(-1)
-
-/* LUA_TINT is an internal type, not visible to applications. There are many
- * potential values where it can be tweaked to (code autoadjusts to these):
- *
- * -2: not 'usual' type value; good since 'LUA_TINT' is not part of the API
- * LUA_TNUMBER+1: shifts other type values upwards, breaking binary compatibility
- *     not acceptable for 5.1, maybe 5.2 onwards?
- *  9: greater than existing (5.1) type values.
- * -13 (0xff..f3) or 0x13: 'ttisnumber()' and 'ttype_ext()' can be reduced to
- *     bitmask operation instead of conditional (may be good for pipelined processors)
-*/
-#if defined(LNUM_INT32) || defined(LNUM_INT64)
-# define LUA_TINT (-2)
-#endif
 
 #define LUA_TNIL		0
 #define LUA_TBOOLEAN		1
@@ -155,8 +138,6 @@ LUA_API int             (lua_iscfunction) (lua_State *L, int idx);
 LUA_API int             (lua_isuserdata) (lua_State *L, int idx);
 LUA_API int             (lua_type) (lua_State *L, int idx);
 LUA_API const char     *(lua_typename) (lua_State *L, int tp);
-
-LUA_API int             (lua_isinteger) (lua_State *L, int idx);
 
 LUA_API int            (lua_equal) (lua_State *L, int idx1, int idx2);
 LUA_API int            (lua_rawequal) (lua_State *L, int idx1, int idx2);
@@ -263,21 +244,8 @@ LUA_API lua_Alloc (lua_getallocf) (lua_State *L, void **ud);
 LUA_API void lua_setallocf (lua_State *L, lua_Alloc f, void *ud);
 
 
+
 /*
-* It is unnecessary to break Lua C API 'lua_tonumber()' compatibility, just
-* because the Lua number type is complex. Most C modules would use scalars
-* only. We'll introduce new 'lua_tocomplex' and 'lua_pushcomplex' for when
-* the module really wants to use them.
-*/
-#ifdef LNUM_COMPLEX
-  #include <complex.h>
-  typedef LUA_NUMBER complex lua_Complex;
-  LUA_API lua_Complex (lua_tocomplex) (lua_State *L, int idx);
-  LUA_API void (lua_pushcomplex) (lua_State *L, lua_Complex v);
-#endif
-
-
-/* 
 ** ===============================================================
 ** some useful macros
 ** ===============================================================
@@ -300,12 +268,7 @@ LUA_API void lua_setallocf (lua_State *L, lua_Alloc f, void *ud);
 #define lua_isboolean(L,n)	(lua_type(L, (n)) == LUA_TBOOLEAN)
 #define lua_isthread(L,n)	(lua_type(L, (n)) == LUA_TTHREAD)
 #define lua_isnone(L,n)		(lua_type(L, (n)) == LUA_TNONE)
-
-#if LUA_TINT < 0
-# define lua_isnoneornil(L, n)	( (lua_type(L,(n)) <= 0) && (lua_type(L,(n)) != LUA_TINT) )
-#else
-# define lua_isnoneornil(L, n)	(lua_type(L, (n)) <= 0)
-#endif
+#define lua_isnoneornil(L, n)	(lua_type(L, (n)) <= 0)
 
 #define lua_pushliteral(L, s)	\
 	lua_pushlstring(L, "" s, (sizeof(s)/sizeof(char))-1)
@@ -373,11 +336,16 @@ LUA_API const char *lua_getlocal (lua_State *L, const lua_Debug *ar, int n);
 LUA_API const char *lua_setlocal (lua_State *L, const lua_Debug *ar, int n);
 LUA_API const char *lua_getupvalue (lua_State *L, int funcindex, int n);
 LUA_API const char *lua_setupvalue (lua_State *L, int funcindex, int n);
-
 LUA_API int lua_sethook (lua_State *L, lua_Hook func, int mask, int count);
 LUA_API lua_Hook lua_gethook (lua_State *L);
 LUA_API int lua_gethookmask (lua_State *L);
 LUA_API int lua_gethookcount (lua_State *L);
+
+/* From Lua 5.2. */
+LUA_API void *lua_upvalueid (lua_State *L, int idx, int n);
+LUA_API void lua_upvaluejoin (lua_State *L, int idx1, int n1, int idx2, int n2);
+LUA_API int lua_loadx (lua_State *L, lua_Reader reader, void *dt,
+		       const char *chunkname, const char *mode);
 
 
 struct lua_Debug {
@@ -399,7 +367,7 @@ struct lua_Debug {
 
 
 /******************************************************************************
-* Copyright (C) 1994-2012 Lua.org, PUC-Rio.  All rights reserved.
+* Copyright (C) 1994-2008 Lua.org, PUC-Rio.  All rights reserved.
 *
 * Permission is hereby granted, free of charge, to any person obtaining
 * a copy of this software and associated documentation files (the
@@ -423,4 +391,3 @@ struct lua_Debug {
 
 
 #endif
-

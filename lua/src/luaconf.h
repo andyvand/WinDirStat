@@ -1,44 +1,15 @@
 /*
-** $Id$
-** Configuration file for Lua (external)
-** See Copyright Notice in lua.h
+** Configuration header.
+** Copyright (C) 2005-2013 Mike Pall. See Copyright Notice in luajit.h
 */
 
-
-#ifndef lconfig_h
-#define lconfig_h
+#ifndef luaconf_h
+#define luaconf_h
 
 #include <limits.h>
 #include <stddef.h>
 
-/*
-** ==================================================================
-** Search for "@@" to find all configurable definitions.
-** ===================================================================
-*/
-
-
-/*
-@@ LUA_PATH and LUA_CPATH are the names of the environment variables that
-@* Lua check to set its paths.
-@@ LUA_INIT is the name of the environment variable that Lua
-@* checks for initialization code.
-** CHANGE them if you want different names.
-*/
-#define LUA_PATH        "LUA_PATH"
-#define LUA_CPATH       "LUA_CPATH"
-#define LUA_INIT	"LUA_INIT"
-
-
-/*
-@@ LUA_PATH_DEFAULT is the default path that Lua uses to look for
-@* Lua libraries.
-@@ LUA_CPATH_DEFAULT is the default path that Lua uses to look for
-@* C libraries.
-** CHANGE them if your machine has a non-conventional directory
-** hierarchy or if you want to install your libraries in
-** non-conventional directories.
-*/
+/* Default path for loading Lua and C modules with require(). */
 #if defined(_WIN32)
 /*
 ** In Windows, any exclamation mark ('!') in the path is replaced by the
@@ -46,234 +17,123 @@
 */
 #define LUA_LDIR	"!\\lua\\"
 #define LUA_CDIR	"!\\"
-#define LUA_PATH_DEFAULT  \
-		".\\?.lua;"  LUA_LDIR"?.lua;"  LUA_LDIR"?\\init.lua;" \
-		             LUA_CDIR"?.lua;"  LUA_CDIR"?\\init.lua"
+#define LUA_PATH_DEFAULT \
+  ".\\?.lua;" LUA_LDIR"?.lua;" LUA_LDIR"?\\init.lua;"
 #define LUA_CPATH_DEFAULT \
-	".\\?.dll;"  LUA_CDIR"?.dll;" LUA_CDIR"loadall.dll"
-
+  ".\\?.dll;" LUA_CDIR"?.dll;" LUA_CDIR"loadall.dll"
 #else
+/*
+** Note to distribution maintainers: do NOT patch the following line!
+** Please read ../doc/install.html#distro and pass PREFIX=/usr instead.
+*/
 #define LUA_ROOT	"/usr/local/"
 #define LUA_LDIR	LUA_ROOT "share/lua/5.1/"
 #define LUA_CDIR	LUA_ROOT "lib/lua/5.1/"
-#define LUA_PATH_DEFAULT  \
-		"./?.lua;"  LUA_LDIR"?.lua;"  LUA_LDIR"?/init.lua;" \
-		            LUA_CDIR"?.lua;"  LUA_CDIR"?/init.lua"
+#ifdef LUA_XROOT
+#define LUA_JDIR	LUA_XROOT "share/luajit-2.0.2/"
+#define LUA_XPATH \
+  ";" LUA_XROOT "share/lua/5.1/?.lua;" LUA_XROOT "share/lua/5.1/?/init.lua"
+#define LUA_XCPATH	LUA_XROOT "lib/lua/5.1/?.so;"
+#else
+#define LUA_JDIR	LUA_ROOT "share/luajit-2.0.2/"
+#define LUA_XPATH
+#define LUA_XCPATH
+#endif
+#define LUA_PATH_DEFAULT \
+  "./?.lua;" LUA_JDIR"?.lua;" LUA_LDIR"?.lua;" LUA_LDIR"?/init.lua" LUA_XPATH
 #define LUA_CPATH_DEFAULT \
-	"./?.so;"  LUA_CDIR"?.so;" LUA_CDIR"loadall.so"
+  "./?.so;" LUA_CDIR"?.so;" LUA_XCPATH LUA_CDIR"loadall.so"
 #endif
 
+/* Environment variable names for path overrides and initialization code. */
+#define LUA_PATH	"LUA_PATH"
+#define LUA_CPATH	"LUA_CPATH"
+#define LUA_INIT	"LUA_INIT"
 
-/*
-@@ LNUM_DOUBLE | LNUM_FLOAT | LNUM_LDOUBLE: Generic Lua number mode
-@@ LNUM_INT32 | LNUM_INT64: Integer type (optional)
-@@ LNUM_COMPLEX: Define for using 'a+bi' numbers
-@*
-@* You can combine LNUM_xxx but only one of each group. I.e. 'LNUM_FLOAT
-@* LNUM_INT32 LNUM_COMPLEX' gives float range complex numbers, with 
-@* 32-bit scalar integer range optimized.
-*/
-/*#define LNUM_DOUBLE*/
-
-#if __LP64__
-	#define LNUM_DOUBLE
-	#define LNUM_INT64
-#else /* implicitly 32-bit Mac
-	// TODO: Add case for iPhone
-	// Should we try float for 32-bit since we now have an int type?
-	// There are enough double APIs in Cocoa that keeping double might be best
-	*/
-	#define LNUM_DOUBLE
-	#define LNUM_INT32
-#endif
-
-/* Seems cool. Why not? We're already using C99 in the Bridge. */
-/* #define LNUM_COMPLEX */
-
-/*
-** LUA_NUMBER is the type of floating point number in Lua
-** LUA_NUMBER_SCAN is the format for reading numbers.
-** LUA_NUMBER_FMT is the format for writing numbers.
-*/
-#ifdef LNUM_FLOAT
-# define LUA_NUMBER         float
-# define LUA_NUMBER_SCAN    "%f"
-# define LUA_NUMBER_FMT     "%g"  
-#elif defined(LNUM_LDOUBLE)
-# define LUA_NUMBER         long double
-# define LUA_NUMBER_SCAN    "%Lg"
-# define LUA_NUMBER_FMT     "%.20Lg"
+/* Special file system characters. */
+#if defined(_WIN32)
+#define LUA_DIRSEP	"\\"
 #else
-# define LUA_NUMBER	        double
-# define LUA_NUMBER_SCAN    "%lf"
-# define LUA_NUMBER_FMT     "%.14g"
+#define LUA_DIRSEP	"/"
+#endif
+#define LUA_PATHSEP	";"
+#define LUA_PATH_MARK	"?"
+#define LUA_EXECDIR	"!"
+#define LUA_IGMARK	"-"
+#define LUA_PATH_CONFIG \
+  LUA_DIRSEP "\n" LUA_PATHSEP "\n" LUA_PATH_MARK "\n" \
+  LUA_EXECDIR "\n" LUA_IGMARK
+
+/* Quoting in error messages. */
+#define LUA_QL(x)	"'" x "'"
+#define LUA_QS		LUA_QL("%s")
+
+/* Various tunables. */
+#define LUAI_MAXSTACK	65500	/* Max. # of stack slots for a thread (<64K). */
+#define LUAI_MAXCSTACK	8000	/* Max. # of stack slots for a C func (<10K). */
+#define LUAI_GCPAUSE	200	/* Pause GC until memory is at 200%. */
+#define LUAI_GCMUL	200	/* Run GC at 200% of allocation speed. */
+#define LUA_MAXCAPTURES	32	/* Max. pattern captures. */
+
+/* Compatibility with older library function names. */
+#define LUA_COMPAT_MOD		/* OLD: math.mod, NEW: math.fmod */
+#define LUA_COMPAT_GFIND	/* OLD: string.gfind, NEW: string.gmatch */
+
+/* Configuration for the frontend (the luajit executable). */
+#if defined(luajit_c)
+#define LUA_PROGNAME	"luajit"  /* Fallback frontend name. */
+#define LUA_PROMPT	"> "	/* Interactive prompt. */
+#define LUA_PROMPT2	">> "	/* Continuation prompt. */
+#define LUA_MAXINPUT	512	/* Max. input line length. */
 #endif
 
-
+/* Note: changing the following defines breaks the Lua 5.1 ABI. */
+#define LUA_INTEGER	ptrdiff_t
+#define LUA_IDSIZE	60	/* Size of lua_Debug.short_src. */
 /*
-@@ LUAI_BITSINT defines the number of bits in an int.
-** CHANGE here if Lua cannot automatically detect the number of bits of
-** your machine. Probably you do not need to change this.
+** Size of lauxlib and io.* on-stack buffers. Weird workaround to avoid using
+** unreasonable amounts of stack space, but still retain ABI compatibility.
+** Blame Lua for depending on BUFSIZ in the ABI, blame **** for wrecking it.
 */
-/* avoid overflows in comparison */
-#if INT_MAX-20 < 32760
-#define LUAI_BITSINT	16
-#elif INT_MAX > 2147483640L
-/* int has at least 32 bits */
-#define LUAI_BITSINT	32
-#else
-#error "you must define LUA_BITSINT with number of bits in an integer"
-#endif
+#define LUAL_BUFFERSIZE	(BUFSIZ > 16384 ? 8192 : BUFSIZ)
 
-
-/*
-** LUA_INTEGER is the integer type used by lua_pushinteger/lua_tointeger/lua_isinteger.
-** LUA_INTEGER_SCAN is the format for reading integers
-** LUA_INTEGER_FMT is the format for writing integers
+/* The following defines are here only for compatibility with luaconf.h
+** from the standard Lua distribution. They must not be changed for LuaJIT.
 */
-#ifdef LNUM_INT64
-# define LUA_INTEGER	long long
-# ifdef _MSC_VER
-#  define lua_str2ul    _strtoui64
-# else
-#  define lua_str2ul    strtoull
-# endif
-# define LUA_INTEGER_SCAN "%lld"
-# define LUA_INTEGER_FMT "%lld"
-# define LUA_INTEGER_MAX 0x7fffffffffffffffLL       /* 2^63-1 */ 
-# define LUA_INTEGER_MIN (-LUA_INTEGER_MAX - 1LL)   /* -2^63 */
-/* */
-#else
-# if LUAI_BITSINT == 32
-#  define LUA_INTEGER   int
-#  define LUA_INTEGER_SCAN "%d"
-#  define LUA_INTEGER_FMT "%d"
-# else
-/* Note: 'LUA_INTEGER' being 'ptrdiff_t' (as in Lua 5.1) causes problems with
- *       'printf()' operations. Also 'unsigned ptrdiff_t' is invalid. */
-#  define LUA_INTEGER   long
-#  define LUA_INTEGER_SCAN "%ld"
-#  define LUA_INTEGER_FMT "%ld"
-# endif
-# define LUA_INTEGER_MAX 0x7FFFFFFF             /* 2^31-1 */
-#endif
+#define LUA_NUMBER_DOUBLE
+#define LUA_NUMBER		double
+#define LUAI_UACNUMBER		double
+#define LUA_NUMBER_SCAN		"%lf"
+#define LUA_NUMBER_FMT		"%.14g"
+#define lua_number2str(s, n)	sprintf((s), LUA_NUMBER_FMT, (n))
+#define LUAI_MAXNUMBER2STR	32
+#define LUA_INTFRMLEN		"l"
+#define LUA_INTFRM_T		long
 
-#ifndef lua_str2ul
-# define lua_str2ul (unsigned LUA_INTEGER)strtoul
-#endif
-#ifndef LUA_INTEGER_MIN
-# define LUA_INTEGER_MIN (-LUA_INTEGER_MAX -1)  /* -2^16|32 */
-#endif
-
-
-/*
-@@ LUA_API is a mark for all core API functions.
-@@ LUALIB_API is a mark for all standard library functions.
-** CHANGE them if you need to define those functions in some special way.
-** For instance, if you want to create one Windows DLL with the core and
-** the libraries, you may want to use the following definition (define
-** LUA_BUILD_AS_DLL to get it).
-*/
+/* Linkage of public API functions. */
 #if defined(LUA_BUILD_AS_DLL)
-
 #if defined(LUA_CORE) || defined(LUA_LIB)
-#define LUA_API __declspec(dllexport)
+#define LUA_API		__declspec(dllexport)
 #else
-#define LUA_API __declspec(dllimport)
+#define LUA_API		__declspec(dllimport)
 #endif
-
 #else
-
 #define LUA_API		extern
-
 #endif
 
-/* more often than not the libs go together with the core */
 #define LUALIB_API	LUA_API
 
-
-/*
-@@ LUA_IDSIZE gives the maximum size for the description of the source
-@* of a function in debug information.
-** CHANGE it if you want a different size.
-*/
-#define LUA_IDSIZE	60
-
-
-/*
-@@ LUAL_BUFFERSIZE is the buffer size used by the lauxlib buffer system.
-*/
-#define LUAL_BUFFERSIZE		BUFSIZ
-
-
-/* }================================================================== */
-
-
-/*
-@@ LUA_COMPAT_GETN controls compatibility with old getn behavior.
-** CHANGE it (define it) if you want exact compatibility with the
-** behavior of setn/getn in Lua 5.0.
-*/
-#undef LUA_COMPAT_GETN
-
-/*
-@@ LUA_COMPAT_LOADLIB controls compatibility about global loadlib.
-** CHANGE it to undefined as soon as you do not need a global 'loadlib'
-** function (the function is still available as 'package.loadlib').
-*/
-#undef LUA_COMPAT_LOADLIB
-
-/*
-@@ LUA_COMPAT_VARARG controls compatibility with old vararg feature.
-** CHANGE it to undefined as soon as your programs use only '...' to
-** access vararg parameters (instead of the old 'arg' table).
-*/
-#define LUA_COMPAT_VARARG
-
-/*
-@@ LUA_COMPAT_MOD controls compatibility with old math.mod function.
-** CHANGE it to undefined as soon as your programs use 'math.fmod' or
-** the new '%' operator instead of 'math.mod'.
-*/
-#define LUA_COMPAT_MOD
-
-/*
-@@ LUA_COMPAT_LSTR controls compatibility with old long string nesting
-@* facility.
-** CHANGE it to 2 if you want the old behaviour, or undefine it to turn
-** off the advisory error when nesting [[...]].
-*/
-#define LUA_COMPAT_LSTR		1
-
-/*
-@@ LUA_COMPAT_GFIND controls compatibility with old 'string.gfind' name.
-** CHANGE it to undefined as soon as you rename 'string.gfind' to
-** 'string.gmatch'.
-*/
-#define LUA_COMPAT_GFIND
-
-/*
-@@ LUA_COMPAT_OPENLIB controls compatibility with old 'luaL_openlib'
-@* behavior.
-** CHANGE it to undefined as soon as you replace to 'luaL_register'
-** your uses of 'luaL_openlib'
-*/
-#define LUA_COMPAT_OPENLIB
-
-/*
-@@ LUA_COMPAT_TOINTEGER controls compatibility with 5.1 'lua_tointeger()';
-@* allows values not fitting in 'lua_Integer' to be rounded.
-*/
-#define LUA_COMPAT_TOINTEGER
-
-/* =================================================================== */
-
-/*
-** Local configuration. You can use this space to add your redefinitions
-** without modifying the main part of the file.
-*/
-
-
-
+/* Support for internal assertions. */
+#if defined(LUA_USE_ASSERT) || defined(LUA_USE_APICHECK)
+#include <assert.h>
+#endif
+#ifdef LUA_USE_ASSERT
+#define lua_assert(x)		assert(x)
+#endif
+#ifdef LUA_USE_APICHECK
+#define luai_apicheck(L, o)	{ (void)L; assert(o); }
+#else
+#define luai_apicheck(L, o)	{ (void)L; }
 #endif
 
+#endif
